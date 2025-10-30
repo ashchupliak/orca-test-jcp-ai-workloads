@@ -51,5 +51,3 @@ logs/
 
 # Note: .devcontainer/devcontainer.json should be committed
 !devcontainer.json
-
-

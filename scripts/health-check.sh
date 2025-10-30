@@ -69,4 +69,3 @@ echo "Next steps:"
 echo "  - Install dependencies: pip install -r requirements.txt"
 echo "  - Run tests: python tests/test_model_inference.py"
 echo ""
-

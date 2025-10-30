@@ -5,6 +5,9 @@ numpy>=1.24.0
 requests>=2.31.0
 psutil>=5.9.0
 
+# LLM Client dependencies
+requests>=2.31.0
+
 # Optional: GPU support (uncomment if GPU available)
 # torch[cuda]>=2.0.0
 
@@ -14,4 +17,3 @@ psutil>=5.9.0
 
 # Optional: GPU monitoring (uncomment if GPU available)
 # GPUtil>=1.4.0
-
