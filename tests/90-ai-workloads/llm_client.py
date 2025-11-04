@@ -27,7 +27,7 @@ except ImportError:
 
 class LLMClient:
     """Generic LLM client for OpenAI-compatible APIs."""
-    
+
     def __init__(
         self,
         api_base_url: Optional[str] = None,
@@ -37,7 +37,7 @@ class LLMClient:
     ):
         """
         Initialize LLM client.
-        
+
         Args:
             api_base_url: Base URL for LLM API (from env LLM_API_BASE_URL if not provided)
             api_key: API key/token (from env LLM_API_KEY if not provided)
@@ -48,18 +48,18 @@ class LLMClient:
         self.api_key = api_key or os.environ.get("LLM_API_KEY")
         self.model = model or os.environ.get("LLM_MODEL")
         self.timeout = timeout
-        
+
         if not self.api_base_url:
             raise ValueError("LLM_API_BASE_URL environment variable is required")
         if not self.api_key:
             raise ValueError("LLM_API_KEY environment variable is required")
-        
+
         # Ensure URL doesn't end with /
         self.api_base_url = self.api_base_url.rstrip("/")
-        
+
         # Determine API type based on URL
         self.api_type = self._detect_api_type()
-        
+
     def _detect_api_type(self) -> str:
         """Detect API type from URL."""
         url_lower = self.api_base_url.lower()
@@ -70,21 +70,21 @@ class LLMClient:
         else:
             # Assume OpenAI-compatible by default
             return "openai"
-    
+
     def _get_headers(self) -> Dict[str, str]:
         """Get request headers."""
         headers = {
             "Content-Type": "application/json",
         }
-        
+
         if self.api_type == "anthropic":
             headers["x-api-key"] = self.api_key
             headers["anthropic-version"] = "2023-06-01"
         else:
             headers["Authorization"] = f"Bearer {self.api_key}"
-        
+
         return headers
-    
+
     def chat_completion(
         self,
         messages: List[Dict[str, str]],
@@ -95,39 +95,39 @@ class LLMClient:
     ) -> Dict[str, Any]:
         """
         Send chat completion request.
-        
+
         Args:
             messages: List of message dicts with 'role' and 'content'
             model: Model name (overrides instance default)
             temperature: Sampling temperature
             max_tokens: Maximum tokens to generate
             **kwargs: Additional provider-specific parameters
-            
+
         Returns:
             Response dict with completion results
         """
         model = model or self.model
         if not model:
             raise ValueError("Model name is required (set LLM_MODEL env var or pass model parameter)")
-        
+
         endpoint = f"{self.api_base_url}/v1/chat/completions"
-        
+
         payload = {
             "model": model,
             "messages": messages,
             "temperature": temperature,
         }
-        
+
         if max_tokens:
             payload["max_tokens"] = max_tokens
-        
+
         # Add any additional parameters
         payload.update(kwargs)
-        
+
         # Anthropic API uses different endpoint and format
         if self.api_type == "anthropic":
             return self._anthropic_completion(messages, model, temperature, max_tokens, **kwargs)
-        
+
         try:
             start_time = time.time()
             response = requests.post(
@@ -137,10 +137,10 @@ class LLMClient:
                 timeout=self.timeout
             )
             response_time = time.time() - start_time
-            
+
             response.raise_for_status()
             result = response.json()
-            
+
             return {
                 "success": True,
                 "response_time": response_time,
@@ -149,14 +149,14 @@ class LLMClient:
                 "usage": result.get("usage", {}),
                 "raw_response": result
             }
-            
+
         except requests.exceptions.RequestException as e:
             return {
                 "success": False,
                 "error": str(e),
                 "status_code": getattr(e.response, "status_code", None)
             }
-    
+
     def _anthropic_completion(
         self,
         messages: List[Dict[str, str]],
@@ -167,32 +167,32 @@ class LLMClient:
     ) -> Dict[str, Any]:
         """Handle Anthropic API format."""
         endpoint = f"{self.api_base_url}/v1/messages"
-        
+
         # Convert messages format for Anthropic
         # Anthropic expects system message separately
         system_message = None
         conversation_messages = []
-        
+
         for msg in messages:
             if msg["role"] == "system":
                 system_message = msg["content"]
             else:
                 conversation_messages.append(msg)
-        
+
         payload = {
             "model": model,
             "messages": conversation_messages,
             "temperature": temperature,
         }
-        
+
         if system_message:
             payload["system"] = system_message
-        
+
         if max_tokens:
             payload["max_tokens"] = max_tokens
-        
+
         payload.update(kwargs)
-        
+
         try:
             start_time = time.time()
             response = requests.post(
@@ -202,10 +202,10 @@ class LLMClient:
                 timeout=self.timeout
             )
             response_time = time.time() - start_time
-            
+
             response.raise_for_status()
             result = response.json()
-            
+
             return {
                 "success": True,
                 "response_time": response_time,
@@ -214,32 +214,32 @@ class LLMClient:
                 "usage": result.get("usage", {}),
                 "raw_response": result
             }
-            
+
         except requests.exceptions.RequestException as e:
             return {
                 "success": False,
                 "error": str(e),
                 "status_code": getattr(e.response, "status_code", None)
             }
-    
+
     def simple_completion(self, prompt: str, **kwargs) -> Dict[str, Any]:
         """
         Simple completion with a single user prompt.
-        
+
         Args:
             prompt: User prompt text
             **kwargs: Additional parameters for chat_completion
-            
+
         Returns:
             Response dict with completion results
         """
         messages = [{"role": "user", "content": prompt}]
         return self.chat_completion(messages, **kwargs)
-    
+
     def health_check(self) -> Dict[str, Any]:
         """
         Check if LLM API is accessible and working.
-        
+
         Returns:
             Health check results
         """
@@ -250,7 +250,7 @@ class LLMClient:
                 max_tokens=10,
                 temperature=0.0
             )
-            
+
             return {
                 "status": "healthy" if result.get("success") else "unhealthy",
                 "api_base_url": self.api_base_url,
@@ -269,18 +269,18 @@ class LLMClient:
 def main():
     """CLI interface for testing LLM client."""
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Test LLM client")
     parser.add_argument("--test", choices=["health", "simple", "chat"], default="health")
     parser.add_argument("--prompt", default="Hello, how are you?")
     parser.add_argument("--output", help="Output file for results")
     parser.add_argument("--model", help="Override model name")
-    
+
     args = parser.parse_args()
-    
+
     try:
         client = LLMClient(model=args.model)
-        
+
         if args.test == "health":
             result = client.health_check()
         elif args.test == "simple":
@@ -291,16 +291,16 @@ def main():
                 {"role": "user", "content": args.prompt}
             ]
             result = client.chat_completion(messages, model=args.model)
-        
+
         if args.output:
             with open(args.output, "w") as f:
                 json.dump(result, f, indent=2)
             print(f"Results saved to {args.output}")
         else:
             print(json.dumps(result, indent=2))
-        
+
         sys.exit(0 if result.get("success") or result.get("status") == "healthy" else 1)
-        
+
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
@@ -308,4 +308,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

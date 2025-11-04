@@ -1,177 +1,299 @@
-# Orca AI Workload Test Repository
+# Orca Devcontainer Test Repository
 
-This repository contains test scripts and configurations for validating AI workloads in Orca devcontainer environments.
+This repository contains comprehensive test scripts and configurations for validating Orca devcontainer environments for JetBrains developer workflows.
 
 ## Purpose
 
 This repository is designed to test and validate:
-- AI model loading and inference capabilities
-- GPU-accelerated workloads
-- API server functionality for AI services
-- Concurrent request handling
-- Performance benchmarking
-- Secret management for AI credentials
-- Environment health checks
+- **Multi-language development environments** (Java, Python, JavaScript, Go, Kotlin, Rust, PHP, C#, Ruby)
+- **Git operations** and GitHub CLI workflows
+- **Database client connectivity** (PostgreSQL, MySQL, MongoDB, Redis)
+- **Docker-in-Docker** support
+- **Grazie AI integration** with staging environment
+- **Agent tooling** for Claude Code and other development agents
+- **Environment health** and system resources
+- **Secrets management** for secure credential handling
+- **AI/ML workloads** (optional, for AI-specific development tasks)
 
 ## Repository Structure
 
 ```
 .
 ├── .devcontainer/
-│   └── devcontainer.json          # Container configuration
+│   └── devcontainer.json                    # Multi-language devcontainer configuration
+│
 ├── tests/
-│   ├── test_model_inference.py    # Basic model inference test
-│   ├── test_gpu_inference.py      # GPU-accelerated inference test
-│   ├── test_concurrent_requests.py # Concurrent request test
-│   ├── test_secret_management.py   # Secret handling test
-│   └── benchmark.py                # Performance benchmark
+│   ├── 01-environment/                      # Basic environment validation
+│   │   ├── test_health_check.py
+│   │   └── test_system_resources.py
+│   │
+│   ├── 02-languages/                        # Programming language tests
+│   │   ├── test_java.py
+│   │   ├── test_python.py
+│   │   └── test_javascript.py
+│   │
+│   ├── 03-git/                              # Git and GitHub workflows
+│   │   ├── test_git_operations.py
+│   │   └── test_github_cli.py
+│   │
+│   ├── 06-databases/                        # Database client tests
+│   │   └── test_database_clients.py
+│   │
+│   ├── 07-docker/                           # Docker-in-Docker tests
+│   │   └── test_docker_socket.py
+│   │
+│   ├── 10-grazie/                           # Grazie AI integration
+│   │   ├── grazie_client.py                 # Grazie API client
+│   │   └── test_grazie_staging.py           # Grazie staging test
+│   │
+│   ├── 90-ai-workloads/                     # AI/ML workload tests (optional)
+│   │   ├── test_model_inference.py
+│   │   ├── test_gpu_inference.py
+│   │   └── benchmark.py
+│   │
+│   └── common/                              # Shared test utilities
+│       ├── test_framework.py
+│       └── __init__.py
+│
 ├── scripts/
-│   └── health-check.sh             # Environment health check
-├── models/                         # Model files (gitignored)
-├── requirements.txt                # Python dependencies
-└── README.md                       # This file
+│   ├── run-all-tests.sh                     # Master test runner
+│   └── install-tools.sh                     # Tool installation script
+│
+├── requirements.txt                         # Python dependencies
+└── README.md                                # This file
 ```
 
 ## Quick Start
 
-### 1. Environment Setup
+### Running Individual Tests
 
-The devcontainer will automatically:
-- Install Python 3.11
-- Install dependencies from `requirements.txt`
-- Configure environment variables
-
-### 2. Running Tests
-
-**Basic Inference Test:**
 ```bash
-python tests/test_model_inference.py
-python tests/test_model_inference.py --output /tmp/results.json
+# Environment health check
+python3 tests/01-environment/test_health_check.py --output /tmp/health-check.json
+
+# Java development environment
+python3 tests/02-languages/test_java.py --output /tmp/java-test.json
+
+# Git operations
+python3 tests/03-git/test_git_operations.py --output /tmp/git-test.json
+
+# Grazie staging integration (requires GRAZIE_JWT_TOKEN)
+export GRAZIE_JWT_TOKEN="your-token-here"
+python3 tests/10-grazie/test_grazie_staging.py --output /tmp/grazie-test.json
 ```
 
-**GPU Inference Test:**
+### Running Test Categories
+
 ```bash
-python tests/test_gpu_inference.py
-python tests/test_gpu_inference.py --output /tmp/gpu-results.json
+# Run all language tests
+bash scripts/run-all-tests.sh --category languages --output /tmp/languages.json
+
+# Run all git tests
+bash scripts/run-all-tests.sh --category git --output /tmp/git-tests.json
+
+# Run all database tests
+bash scripts/run-all-tests.sh --category databases --output /tmp/databases.json
+
+# Run all Docker tests
+bash scripts/run-all-tests.sh --category docker --output /tmp/docker-tests.json
+
+# Run Grazie tests
+bash scripts/run-all-tests.sh --category grazie --output /tmp/grazie-tests.json
 ```
 
-**Concurrent Requests Test:**
+### Running Full Test Suite
+
 ```bash
-python tests/test_concurrent_requests.py --num-requests 10 --api-url http://localhost:8000
+# Run all tests
+bash scripts/run-all-tests.sh --all --output /tmp/full-suite.json
 ```
 
-**Performance Benchmark:**
-```bash
-python tests/benchmark.py --duration 300 --output /tmp/benchmark.json
-```
+### Using with Orca Facade
 
-**Health Check:**
-```bash
-./scripts/health-check.sh
-```
+This repository is configured to work with the Orca Facade service. Use the HTTP test file:
+- `tests/src/test/kotlin/e2e/manual-playground/additional-tests/comprehensive-devcontainer-test.http`
 
-### 3. Using with Orca Facade
+The HTTP tests will:
+1. Provision an Orca environment from this repository
+2. Execute test scripts inside the devcontainer
+3. Collect logs and results
+4. Terminate the environment when done
 
-This repository is configured to work with Orca Facade service. Use the HTTP test file:
-`tests/src/test/kotlin/e2e/manual-playground/additional-tests/ai-workload-comprehensive-test.http`
+## Test Categories
 
-## Test Aims
+### 1. Environment Health (01-environment/)
+- ✅ System commands and utilities
+- ✅ Environment variables
+- ✅ File system accessibility
+- ✅ CPU, memory, and disk resources
 
-### 1. Basic Model Inference
-- ✅ Load AI models (using HuggingFace transformers)
-- ✅ Run inference on test prompts
-- ✅ Validate output format and quality
-- ✅ Measure inference latency
+### 2. Programming Languages (02-languages/)
+- ✅ **Java**: JDK, Maven, Gradle
+- ✅ **Python**: Python 3, pip, virtualenv
+- ✅ **JavaScript/Node.js**: Node, npm, npx
+- ✅ **Go**: Go compiler and tools
+- ✅ **Kotlin**: Kotlin compiler (via SDKMAN)
+- ✅ **Rust**: Cargo and rustc
+- ✅ **PHP**: PHP CLI and Composer
+- ✅ **C#/.NET**: dotnet CLI
+- ✅ **Ruby**: Ruby and bundler
 
-### 2. GPU-Accelerated Workloads
-- ✅ Detect GPU availability
-- ✅ Load models on GPU
-- ✅ Execute GPU-accelerated inference
-- ✅ Compare GPU vs CPU performance
+### 3. Git & GitHub (03-git/)
+- ✅ Git version control operations
+- ✅ GitHub CLI (gh) commands
+- ✅ Repository initialization, commits, and logs
+- ✅ PR creation workflows (with authentication)
 
-### 3. API Server Testing
-- ✅ Start AI API server
-- ✅ Test API endpoints
-- ✅ Handle concurrent requests
-- ✅ Monitor API performance
+### 4. Database Clients (06-databases/)
+- ✅ PostgreSQL client (psql)
+- ✅ MySQL client (mysql)
+- ✅ MongoDB shell (mongosh)
+- ✅ Redis CLI (redis-cli)
 
-### 4. Concurrent Requests
-- ✅ Process multiple simultaneous requests
-- ✅ Measure throughput
-- ✅ Validate response consistency
-- ✅ Monitor resource usage under load
+### 5. Docker (07-docker/)
+- ✅ Docker daemon access
+- ✅ Docker socket availability
+- ✅ Container execution
 
-### 5. Performance Benchmarking
-- ✅ Measure CPU usage
-- ✅ Monitor memory consumption
-- ✅ Track inference latency
-- ✅ Calculate throughput metrics
+### 6. Grazie Integration (10-grazie/)
+- ✅ Grazie API client
+- ✅ Staging environment connectivity
+- ✅ Chat query execution
+- ✅ Response logging and validation
 
-### 6. Secret Management
-- ✅ Verify secrets are accessible in container
-- ✅ Validate secrets are masked in API responses
-- ✅ Test secret retrieval from environment variables
+**Grazie Test Details:**
+- Sends query: "please write a kotlin app that will do 2+2"
+- Uses staging environment
+- Requires `GRAZIE_JWT_TOKEN` environment variable
+- Logs response clearly for worker logs inspection
 
-### 7. Health Checks
-- ✅ Verify Python installation
-- ✅ Check dependency availability
-- ✅ Validate CUDA/GPU support
-- ✅ Confirm workspace structure
+### 7. AI/ML Workloads (90-ai-workloads/) - Optional
+- ✅ AI model loading (HuggingFace transformers)
+- ✅ GPU-accelerated inference
+- ✅ Concurrent request handling
+- ✅ Performance benchmarking
 
 ## Environment Variables
 
 The following environment variables can be configured:
 
+### Core Testing
+- `PYTHONPATH` - Python module search path (default: `/workspace`)
+- `TEST_MODE` - Test mode identifier (default: `devcontainer`)
+
+### Grazie Integration
+- `GRAZIE_JWT_TOKEN` - **Required** for Grazie tests - JWT token for Grazie staging authentication
+- `USER_JWT_TOKEN` - Alternative name for JWT token
+
+### AI Workloads (Optional)
 - `MODEL_CACHE_DIR` - Directory for caching AI models (default: `/workspace/.cache/models`)
 - `CUDA_VISIBLE_DEVICES` - GPU device ID (default: `0`)
-- `PYTHONPATH` - Python module search path (default: `/workspace`)
-- `API_HOST` - API server host (default: `0.0.0.0`)
-- `API_PORT` - API server port (default: `8000`)
-- `OPENAI_API_KEY` - OpenAI API key (if needed)
-- `HUGGINGFACE_TOKEN` - HuggingFace token (if needed)
 
-## Model Selection
+### API Keys (Optional)
+- `GITHUB_TOKEN` - GitHub token for PR operations
+- `OPENAI_API_KEY` - OpenAI API key (if needed for AI tests)
+- `HUGGINGFACE_TOKEN` - HuggingFace token (if needed for private models)
 
-Tests use lightweight models for speed:
-- **gpt2** - Small, fast model for basic testing
-- Models are downloaded on first run and cached for subsequent runs
+## Output Format
 
-For production testing, replace with your actual models.
+All tests produce JSON output with the following structure:
+
+```json
+{
+  "status": "success",
+  "test_type": "environment_health",
+  "checks": [
+    {
+      "name": "bash_installed",
+      "passed": true,
+      "output": "bash version 5.1.16"
+    }
+  ],
+  "metadata": {
+    "environment": "devcontainer",
+    "hostname": "container-xyz"
+  },
+  "timestamp": "2025-01-15T10:30:00",
+  "duration_seconds": 2.5,
+  "passed_checks": 10,
+  "total_checks": 10
+}
+```
 
 ## Performance Expectations
 
-- **Model Loading**: 10-30 seconds (first run), cached afterwards
-- **Inference Time**: < 1 second for small models
-- **Concurrent Requests**: 10+ requests/second (depends on hardware)
-- **Memory Usage**: 500MB - 2GB (depends on model size)
+- **Environment setup**: 2-5 minutes (first run)
+- **Individual test execution**: 5-30 seconds
+- **Full language suite**: 2-5 minutes
+- **Grazie query**: 10-30 seconds (depending on model response time)
+- **Full test suite**: 10-15 minutes
 
 ## Troubleshooting
 
-### Model Download Fails
-- Check internet connectivity
-- Verify HuggingFace token if using private models
-- Check disk space for model cache
+### Test Failures
 
-### GPU Not Detected
-- Verify GPU is available in container
-- Check CUDA installation
-- Verify `CUDA_VISIBLE_DEVICES` environment variable
+**No JWT token for Grazie tests:**
+```bash
+export GRAZIE_JWT_TOKEN="eyJhbGciOiJSUzUxMi..."
+```
 
-### Import Errors
-- Run `pip install -r requirements.txt`
-- Check Python version (requires 3.8+)
+**Python dependencies missing:**
+```bash
+pip install -r requirements.txt
+```
 
-### Permission Errors
-- Ensure scripts are executable: `chmod +x scripts/*.sh`
-- Check workspace directory permissions
+**Scripts not executable:**
+```bash
+chmod +x scripts/*.sh
+chmod +x tests/*/*.py
+```
+
+### Common Issues
+
+**Import errors in test scripts:**
+- Ensure `PYTHONPATH=/workspace` is set
+- Verify Python dependencies are installed
+
+**Docker tests failing:**
+- Verify Docker socket is mounted: `/var/run/docker.sock`
+- Check Docker daemon is running
+
+**Grazie client import errors:**
+- Ensure `grazie_client.py` is in `tests/10-grazie/`
+- Install dependencies: `pip install requests typing-extensions`
+
+## Development Workflows
+
+This repository supports the following typical JetBrains developer workflows:
+
+1. **Backend Development**: Java/Spring Boot, Python/Django, Node.js/Express
+2. **Frontend Development**: React, Vue, Angular with npm/yarn
+3. **Mobile Development**: Kotlin for Android
+4. **Database Development**: SQL client tools
+5. **DevOps**: Docker, git, shell scripting
+6. **AI/ML Development**: Python ML libraries, model inference
+7. **Agent-Assisted Development**: Claude Code, Grazie AI integration
+
+## Integration with Orca Facade
+
+The Orca Facade provisions ephemeral devcontainer environments from this repository:
+
+1. **User Request** → "Claude, build feature X"
+2. **Facade provisions environment** → Clones this repository, builds devcontainer
+3. **Agent launches** → Claude Code runs inside the container
+4. **Development work** → Agent writes code, runs tests, commits changes
+5. **Environment terminated** → Clean up after task completion
+
+This test suite validates that these environments work correctly for all development scenarios.
 
 ## Contributing
 
 When adding new tests:
-1. Create test script in `tests/` directory
-2. Add to HTTP test file if needed
-3. Update this README with test description
-4. Ensure tests are self-contained and produce JSON output
+1. Create test script in appropriate category directory
+2. Follow `BaseTest` pattern from `common/test_framework.py`
+3. Output JSON results to `/tmp/` for log collection
+4. Update this README with test description
+5. Add corresponding HTTP test in facade manual playground if needed
 
 ## License
 
@@ -179,7 +301,7 @@ This is a test repository for Orca Facade service testing.
 
 ## References
 
-- [HuggingFace Transformers](https://huggingface.co/docs/transformers/)
-- [PyTorch Documentation](https://pytorch.org/docs/)
+- [Orca Facade Documentation](../orca-server/README.md)
 - [Devcontainer Specification](https://containers.dev/)
-- [Orca Facade Documentation](../../../README.md)
+- [Grazie API Documentation](https://grazie-api.internal.jetbrains.com/docs)
+- [JetBrains IDEs](https://www.jetbrains.com/ides/)
