@@ -1,6 +1,6 @@
 {
-  "name": "JetBrains Developer Environment - Full Stack Testing",
-  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "name": "JetBrains Developer Environment - Full Stack Testing (ARM64 Compatible)",
+  "image": "mcr.microsoft.com/devcontainers/base:debian",
 
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
