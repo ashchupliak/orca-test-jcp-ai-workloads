@@ -1,0 +1,19 @@
+{
+  "name": "Ruby Development Tests",
+  "image": "mcr.microsoft.com/devcontainers/base:debian",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    },
+    "ghcr.io/devcontainers/features/ruby:1": {}
+  },
+
+  "remoteEnv": {
+    "PYTHONPATH": "/workspace",
+    "TEST_MODE": "devcontainer"
+  }
+}
