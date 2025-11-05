@@ -65,7 +65,7 @@ class LLMClient:
         url_lower = self.api_base_url.lower()
         if "openai" in url_lower or "azure" in url_lower:
             return "openai"
-        elif "anthropic" in url_lower or "claude" in url_lower:
+        elif "anthropic" in url_lower:
             return "anthropic"
         else:
             # Assume OpenAI-compatible by default
