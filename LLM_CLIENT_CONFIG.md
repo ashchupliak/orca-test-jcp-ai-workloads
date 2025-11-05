@@ -7,7 +7,7 @@ This guide explains how to configure and test the LLM client with your staging e
 The LLM client (`tests/llm_client.py`) is a generic client that supports OpenAI-compatible APIs, including:
 - OpenAI API
 - Azure OpenAI
-- Anthropic Claude API
+- Anthropic API
 - Other OpenAI-compatible providers
 
 ## Configuration
@@ -28,7 +28,7 @@ The LLM client uses the following environment variables:
 
 #### Optional:
 - **`LLM_MODEL`**: Model name to use (defaults to provider default if not set)
-  - Example: `gpt-4`, `gpt-3.5-turbo`, `claude-3-opus`, etc.
+  - Example: `gpt-4`, `gpt-3.5-turbo`, etc.
 
 ### 2. HTTP Client Configuration
 
@@ -136,7 +136,7 @@ The client auto-detects API type from the URL, but you can also manually specify
 - Bearer token authentication
 - Standard message format
 
-### Anthropic Claude API
+### Anthropic API
 - Uses `/v1/messages` endpoint
 - `x-api-key` header authentication
 - Slightly different message format
@@ -223,7 +223,7 @@ python -c "import os; print('URL:', os.environ.get('LLM_API_BASE_URL')); print('
 }
 ```
 
-## Example: Anthropic Claude Staging
+## Example: Anthropic Staging
 
 ```json
 {

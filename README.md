@@ -10,7 +10,7 @@ This repository is designed to test and validate:
 - **Database client connectivity** (PostgreSQL, MySQL, MongoDB, Redis)
 - **Docker-in-Docker** support
 - **Grazie AI integration** with staging environment
-- **Agent tooling** for Claude Code and other development agents
+- **Agent tooling** for AI coding agents
 - **Environment health** and system resources
 - **Secrets management** for secure credential handling
 - **AI/ML workloads** (optional, for AI-specific development tasks)
@@ -272,15 +272,15 @@ This repository supports the following typical JetBrains developer workflows:
 4. **Database Development**: SQL client tools
 5. **DevOps**: Docker, git, shell scripting
 6. **AI/ML Development**: Python ML libraries, model inference
-7. **Agent-Assisted Development**: Claude Code, Grazie AI integration
+7. **Agent-Assisted Development**: AI coding agents, Grazie AI integration
 
 ## Integration with Orca Facade
 
 The Orca Facade provisions ephemeral devcontainer environments from this repository:
 
-1. **User Request** → "Claude, build feature X"
+1. **User Request** → "AI assistant, build feature X"
 2. **Facade provisions environment** → Clones this repository, builds devcontainer
-3. **Agent launches** → Claude Code runs inside the container
+3. **Agent launches** → AI coding agent runs inside the container
 4. **Development work** → Agent writes code, runs tests, commits changes
 5. **Environment terminated** → Clean up after task completion
 

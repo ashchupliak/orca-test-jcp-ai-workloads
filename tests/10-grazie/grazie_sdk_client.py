@@ -119,20 +119,20 @@ class GrazieSDKClient:
         
         return llm_params
     
-    def chat_stream(self, 
-                   messages: List[Dict[str, str]], 
+    def chat_stream(self,
+                   messages: List[Dict[str, str]],
                    profile: str = "anthropic-claude-3-5-sonnet-20241022",  # Default to Sonnet 4
                    parameters: Optional[Dict[str, Any]] = None,
                    prompt: Optional[str] = None) -> Iterator[Dict[str, Any]]:
         """
         Stream chat completions using the SDK.
-        
+
         Args:
             messages: List of message dictionaries with 'type' and 'content' keys
-            profile: Model profile ID (defaults to Claude Sonnet 4)
+            profile: Model profile ID (defaults to Anthropic Sonnet 4)
             parameters: Optional parameters for the model
             prompt: Optional prompt for tracking
-        
+
         Yields:
             Dictionary chunks from the streaming response
         """
@@ -188,7 +188,7 @@ class GrazieSDKClient:
         
         Args:
             messages: List of message dictionaries
-            profile: Model profile ID (defaults to Claude Sonnet 4)
+            profile: Model profile ID (defaults to Anthropic Sonnet 4)
             parameters: Optional parameters
             prompt: Optional prompt for tracking
         
@@ -213,7 +213,7 @@ class GrazieSDKClient:
         Args:
             user_message: The user's message
             system_message: Optional system message
-            profile: Model profile ID (defaults to Claude Sonnet 4)
+            profile: Model profile ID (defaults to Anthropic Sonnet 4)
             parameters: Optional parameters
             prompt: Optional prompt for tracking
         
@@ -236,7 +236,7 @@ class GrazieSDKClient:
         
         Args:
             messages: List of message dictionaries
-            profile: Model profile ID (defaults to Claude Sonnet 4)
+            profile: Model profile ID (defaults to Anthropic Sonnet 4)
             parameters: Optional parameters
             prompt: Optional prompt for tracking
         
@@ -324,7 +324,7 @@ class GrazieSDKClient:
                     system_message: Optional[str] = None,
                     parameters: Optional[Dict[str, Any]] = None) -> str:
         """
-        Chat specifically with Claude Sonnet 4 model.
+        Chat specifically with Anthropic Sonnet 4 model.
         
         Args:
             user_message: The user's message
@@ -346,7 +346,7 @@ class GrazieSDKClient:
                       system_message: Optional[str] = None,
                       parameters: Optional[Dict[str, Any]] = None) -> Iterator[Dict[str, Any]]:
         """
-        Stream chat with Claude Sonnet 4 model.
+        Stream chat with Anthropic Sonnet 4 model.
         
         Args:
             user_message: The user's message
