@@ -16,5 +16,5 @@
     "TEST_MODE": "devcontainer"
   },
 
-  "postCreateCommand": "apt-get update && apt-get install -y postgresql-client mysql-client redis-tools mongodb-clients && rm -rf /var/lib/apt/lists/*"
+  "postCreateCommand": "apt-get update && apt-get install -y postgresql-client mysql-client redis-tools mongodb-clients libpq-dev && rm -rf /var/lib/apt/lists/* && pip install --no-cache-dir psycopg2-binary pymongo redis mysql-connector-python"
 }
