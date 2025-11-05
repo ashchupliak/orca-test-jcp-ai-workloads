@@ -1,0 +1,17 @@
+{
+  "name": "Grazie Staging Integration Tests",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    }
+  },
+
+  "remoteEnv": {
+    "PYTHONPATH": "/workspace",
+    "TEST_MODE": "devcontainer"
+  },
+
+  "postCreateCommand": "pip install --no-cache-dir requests sseclient-py"
+}

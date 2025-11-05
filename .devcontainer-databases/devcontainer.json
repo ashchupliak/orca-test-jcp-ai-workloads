@@ -1,0 +1,20 @@
+{
+  "name": "Database Client Tests",
+  "image": "mcr.microsoft.com/devcontainers/base:debian",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    }
+  },
+
+  "remoteEnv": {
+    "PYTHONPATH": "/workspace",
+    "TEST_MODE": "devcontainer"
+  },
+
+  "postCreateCommand": "apt-get update && apt-get install -y postgresql-client mysql-client redis-tools mongodb-clients && rm -rf /var/lib/apt/lists/*"
+}
