@@ -15,6 +15,39 @@ This repository is designed to test and validate:
 - **Secrets management** for secure credential handling
 - **AI/ML workloads** (optional, for AI-specific development tasks)
 
+## Enhanced Tests (NEW!)
+
+This repository now includes **enhanced tests** that simulate real-world developer workflows instead of simple command checks. These tests:
+
+- 🚀 **Build actual applications** (REST APIs, web servers, CLI tools)
+- 🧪 **Run real test suites** (pytest, Jest, Go tests, etc.)
+- 📦 **Install dependencies** from real package registries (PyPI, npm, crates.io)
+- 🌐 **Test HTTP endpoints** and validate responses
+- 🐳 **Use Docker** for multi-container applications
+- 💾 **Connect to databases** and run migrations
+- 📊 **Measure performance** (build times, test times, startup times)
+- ✅ **Validate outputs** with pattern matching
+
+**Example**: Instead of just checking if Python exists, the enhanced Python test:
+1. Installs Flask and pytest from PyPI
+2. Creates a REST API with 5 endpoints
+3. Writes 8 pytest tests
+4. Runs the test suite
+5. Starts the Flask server
+6. Tests HTTP endpoints
+7. Measures all timings
+
+**See**: [ENHANCED_TESTS_GUIDE.md](./ENHANCED_TESTS_GUIDE.md) for complete documentation.
+
+**Enhanced Tests Available:**
+- ✅ Python (Flask API + pytest)
+- ✅ JavaScript (Express API + Jest)
+- ✅ Go (HTTP server + Go tests)
+- ✅ Docker Build (multi-stage builds)
+- ✅ Docker Compose (multi-container apps)
+- ✅ PostgreSQL (schema + queries + transactions)
+- 🔨 Java, Rust, .NET, Ruby, PHP (follow same pattern)
+
 ## Repository Structure
 
 ```

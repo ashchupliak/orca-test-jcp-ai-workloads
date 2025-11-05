@@ -13,5 +13,5 @@
     "TEST_MODE": "devcontainer"
   },
 
-  "postCreateCommand": "pip install --no-cache-dir requests"
+  "postCreateCommand": "pip install --no-cache-dir requests flask pytest"
 }

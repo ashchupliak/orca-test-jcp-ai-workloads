@@ -19,5 +19,7 @@
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
     "TEST_MODE": "devcontainer"
-  }
+  },
+
+  "postCreateCommand": "pip install --no-cache-dir flask redis"
 }
