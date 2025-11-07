@@ -10,10 +10,10 @@ services:
       - "35697:35697"
 
     volumes:
-      - ../..:/workspace:cached
+      - ..:/workspace:cached
 
     command: sleep infinity
 
     environment:
       PYTHONPATH: /workspace
-      WORKSPACE_ROOT: /workspace/orca-test-jcp-ai-workloads
+      WORKSPACE_ROOT: /workspace

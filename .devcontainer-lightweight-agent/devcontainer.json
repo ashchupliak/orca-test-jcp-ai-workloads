@@ -6,7 +6,7 @@
 
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
-    "WORKSPACE_ROOT": "/workspace/orca-test-jcp-ai-workloads"
+    "WORKSPACE_ROOT": "/workspace"
   },
 
   "forwardPorts": [35697]
