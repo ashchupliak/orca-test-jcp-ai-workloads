@@ -64,6 +64,9 @@
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
 
+  "postCreateCommand": "bash scripts/install-tools.sh",
+  "postStartCommand": "echo '=== Running AI Workloads Test Suite ===' && bash scripts/run-all-tests.sh --quick --output /tmp/quick-suite.json 2>&1 | tee /tmp/test-execution.log && echo '=== Tests Complete - Keeping container alive ===' && tail -f /tmp/test-execution.log",
+
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
     "GOPATH": "/go",
@@ -73,3 +76,4 @@
     "CUDA_VISIBLE_DEVICES": "0"
   }
 }
+
