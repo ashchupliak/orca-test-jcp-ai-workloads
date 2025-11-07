@@ -1,0 +1,17 @@
+{
+  "name": "Lightweight Agent Testing - Python + Claude",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    }
+  },
+
+  "remoteEnv": {
+    "PYTHONPATH": "/workspace",
+    "WORKSPACE_ROOT": "/workspace/orca-test-jcp-ai-workloads"
+  },
+
+  "postCreateCommand": "pip install --no-cache-dir anthropic fastapi uvicorn[standard] websockets"
+}
