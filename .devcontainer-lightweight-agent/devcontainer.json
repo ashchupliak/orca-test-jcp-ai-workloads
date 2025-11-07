@@ -13,5 +13,5 @@
     "WORKSPACE_ROOT": "/workspace/orca-test-jcp-ai-workloads"
   },
 
-  "postCreateCommand": "pip install --no-cache-dir anthropic fastapi 'uvicorn[standard]' websockets && chmod +x /workspace/orca-test-jcp-ai-workloads/start-agent-server.sh"
+  "postCreateCommand": "pip install --no-cache-dir anthropic fastapi 'uvicorn[standard]' websockets"
 }
