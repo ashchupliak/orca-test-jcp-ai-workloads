@@ -1,0 +1,39 @@
+{
+  "name": "grazie-client-js",
+  "version": "1.0.0",
+  "description": "JavaScript client for Grazie AI API with streaming support and parameter configuration",
+  "main": "grazie_client.js",
+  "scripts": {
+    "start": "node example_usage.js",
+    "test": "node example_usage.js",
+    "demo": "node example_usage.js"
+  },
+  "keywords": [
+    "grazie",
+    "ai",
+    "llm",
+    "chatbot",
+    "streaming",
+    "javascript",
+    "jetbrains"
+  ],
+  "author": "Grazie Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jetbrains/grazie-client-js"
+  },
+  "bugs": {
+    "url": "https://github.com/jetbrains/grazie-client-js/issues"
+  },
+  "homepage": "https://github.com/jetbrains/grazie-client-js#readme"
+} 
