@@ -1,7 +1,7 @@
 services:
   app:
     build:
-      context: ../..
+      context: ..
       dockerfile: .devcontainer-grazie/Dockerfile
 
     # Publish port 8000 to the worker container's localhost
