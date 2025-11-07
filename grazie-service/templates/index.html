@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grazie AI Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=SF+Pro+Text:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --surface-gradient: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --text-primary: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --accent-blue: #007aff;
+            --accent-purple: #af52de;
+            --success-green: #30d158;
+            --error-red: #ff3b30;
+            --warning-orange: #ff9500;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .glass-morphism {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 0;
+        }
+
+        .header h1 {
+            font-family: 'SF Pro Display', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .sidebar {
+            border-radius: 20px;
+            padding: 30px;
+            position: sticky;
+            top: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .chat-area {
+            border-radius: 20px;
+            padding: 30px;
+            min-height: 800px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h3 {
+            font-family: 'SF Pro Display', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 122, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 122, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-success .status-dot { background: var(--success-green); }
+        .status-error .status-dot { background: var(--error-red); }
+        .status-warning .status-dot { background: var(--warning-orange); }
+
+        .model-selector-container {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .model-selector {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .model-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .model-card.selected {
+            border-color: var(--accent-blue);
+            background: rgba(0, 122, 255, 0.2);
+        }
+
+        .model-card h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .model-card p {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .selected-models-info {
+            margin-top: 12px;
+            padding: 8px 12px;
+            background: rgba(0, 122, 255, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 122, 255, 0.2);
+        }
+
+        .selected-models-info p {
+            font-size: 0.8rem;
+            color: var(--accent-blue);
+            margin: 0;
+        }
+
+        .chat-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            height: 600px;
+            margin-bottom: 20px;
+        }
+
+        .chat-window {
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-header h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .chat-status {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .message {
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 90%;
+            word-wrap: break-word;
+        }
+
+        .message-user {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            color: white;
+            margin-left: auto;
+        }
+
+        .message-assistant {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .message-system {
+            background: rgba(255, 149, 0, 0.1);
+            color: var(--warning-orange);
+            text-align: center;
+            margin: 0 auto;
+            font-style: italic;
+        }
+
+        .message-error {
+            background: rgba(255, 59, 48, 0.1);
+            color: var(--error-red);
+            border: 1px solid rgba(255, 59, 48, 0.2);
+        }
+
+        .input-area {
+            background: rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .message-input {
+            flex: 1;
+            min-height: 44px;
+            max-height: 120px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .file-upload-area {
+            margin-bottom: 20px;
+        }
+
+        .file-drop-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-drop-zone:hover,
+        .file-drop-zone.dragover {
+            border-color: var(--accent-blue);
+            background: rgba(0, 122, 255, 0.05);
+        }
+
+        .file-drop-zone i {
+            font-size: 2rem;
+            color: var(--accent-blue);
+            margin-bottom: 12px;
+        }
+
+        .uploaded-files {
+            margin-top: 16px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .file-item i {
+            color: var(--accent-blue);
+        }
+
+        .file-remove {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: var(--error-red);
+            cursor: pointer;
+        }
+
+        .advanced-params {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .param-input {
+            font-size: 0.85rem;
+            padding: 10px 14px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toggle-section {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toggle-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .toggle-content.expanded {
+            max-height: 500px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .chat-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(4, 1fr);
+                height: auto;
+            }
+            
+            .model-selector {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .advanced-params {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+            40% { opacity: 1; transform: scale(1); }
+        }
+
+        .files-attached-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: rgba(0, 122, 255, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 122, 255, 0.2);
+        }
+
+        .files-attached-indicator.visible {
+            display: flex;
+        }
+
+        .files-attached-indicator i {
+            color: var(--accent-blue);
+        }
+
+        .files-attached-indicator span {
+            color: var(--accent-blue);
+            font-size: 0.85rem;
+        }
+
+        .debug-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            max-width: 300px;
+            display: none;
+        }
+
+        .debug-info.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Grazie AI Studio</h1>
+            <p>Advanced Multi-Model AI Interface</p>
+        </div>
+        
+        <div class="main-layout">
+            <div class="sidebar glass-morphism">
+                <!-- Authentication Section -->
+                <div class="form-section">
+                    <h3><i class="fas fa-key"></i> Authentication</h3>
+                    <div class="form-group">
+                        <label for="token">JWT Token</label>
+                        <input type="password" id="token" class="form-control" placeholder="Enter your JWT token">
+                        <div id="token-status" class="status-indicator"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="environment">Environment</label>
+                        <select id="environment" class="form-control">
+                            <option value="staging">Staging</option>
+                            <option value="production">Production</option>
+                        </select>
+                    </div>
+                    
+                    <button id="load-models" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-download"></i> Load Models
+                    </button>
+                </div>
+
+                <!-- Model Selection Section -->
+                <div class="form-section">
+                    <h3><i class="fas fa-robot"></i> Model Selection</h3>
+                    <div class="model-selector-container">
+                        <div id="model-selector" class="model-selector">
+                            <!-- Dynamic model cards will be inserted here -->
+                        </div>
+                    </div>
+                    <div id="selected-models-info" class="selected-models-info" style="display: none;">
+                        <p id="selected-count">0 models selected</p>
+                    </div>
+                </div>
+
+                <!-- File Upload Section -->
+                <div class="form-section">
+                    <h3><i class="fas fa-cloud-upload-alt"></i> File Upload</h3>
+                    <div class="file-drop-zone" id="file-drop-zone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drop files here or click to upload</p>
+                        <small>Supports images, videos, audio, documents, and ZIP files</small>
+                    </div>
+                    <input type="file" id="file-input" multiple accept="image/*,video/*,audio/*,.pdf,.txt,.doc,.docx,.zip,.mov,.mp4,.avi,.mkv" style="display: none;">
+                    <div id="uploaded-files" class="uploaded-files"></div>
+                </div>
+
+                <!-- System Message Section -->
+                <div class="form-section">
+                    <div class="toggle-section" onclick="toggleSection('system-section')">
+                        <h3><i class="fas fa-cog"></i> System Message</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="system-section" class="toggle-content">
+                        <div class="form-group">
+                            <textarea id="system-message" class="form-control" rows="3" placeholder="You are a helpful assistant..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Parameters Section -->
+                <div class="form-section">
+                    <div class="toggle-section" onclick="toggleSection('advanced-section')">
+                        <h3><i class="fas fa-sliders-h"></i> Advanced Parameters</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="advanced-section" class="toggle-content">
+                        <div class="advanced-params">
+                            <div class="form-group">
+                                <label for="temperature">Temperature</label>
+                                <input type="number" id="temperature" class="form-control param-input" step="0.1" min="0" max="2" placeholder="0.7">
+                            </div>
+                            <div class="form-group">
+                                <label for="top-p">Top P</label>
+                                <input type="number" id="top-p" class="form-control param-input" step="0.1" min="0" max="1" placeholder="0.9">
+                            </div>
+                            <div class="form-group">
+                                <label for="max-tokens">Max Tokens</label>
+                                <input type="number" id="max-tokens" class="form-control param-input" min="1" placeholder="1000">
+                            </div>
+                            <div class="form-group">
+                                <label for="seed">Seed</label>
+                                <input type="number" id="seed" class="form-control param-input" placeholder="Random">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="stream" checked>
+                                Enable Streaming
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="debug-mode">
+                                Debug Mode
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-area glass-morphism">
+                <!-- Multi-Model Chat Container -->
+                <div class="chat-container" id="chat-container">
+                    <!-- Chat windows will be dynamically created here -->
+                </div>
+                
+                <!-- Global Input Area -->
+                <div class="input-area">
+                    <div id="files-attached-indicator" class="files-attached-indicator">
+                        <i class="fas fa-paperclip"></i>
+                        <span id="files-count">0 files attached</span>
+                    </div>
+                    <div class="input-container">
+                        <textarea id="message-input" class="form-control message-input" placeholder="Send a message to all selected models..." disabled rows="2"></textarea>
+                        <button id="send-btn" class="btn btn-primary" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                        <button id="clear-btn" class="btn btn-secondary">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug Info Panel -->
+    <div id="debug-info" class="debug-info">
+        <div id="debug-content"></div>
+    </div>
+
+    <script>
+        let isStreaming = false;
+        let availableModels = [];
+        let selectedModels = [];
+        let uploadedFiles = [];
+        let chatWindows = {};
+        let debugMode = false;
+
+        // DOM elements
+        const tokenInput = document.getElementById('token');
+        const environmentSelect = document.getElementById('environment');
+        const modelSelector = document.getElementById('model-selector');
+        const systemMessageInput = document.getElementById('system-message');
+        const messageInput = document.getElementById('message-input');
+        const chatContainer = document.getElementById('chat-container');
+        const sendBtn = document.getElementById('send-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const loadModelsBtn = document.getElementById('load-models');
+        const fileDropZone = document.getElementById('file-drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const uploadedFilesContainer = document.getElementById('uploaded-files');
+        const selectedModelsInfo = document.getElementById('selected-models-info');
+        const selectedCountSpan = document.getElementById('selected-count');
+        const filesAttachedIndicator = document.getElementById('files-attached-indicator');
+        const filesCountSpan = document.getElementById('files-count');
+        const debugInfo = document.getElementById('debug-info');
+        const debugContent = document.getElementById('debug-content');
+        const debugModeToggle = document.getElementById('debug-mode');
+
+        // Event listeners
+        tokenInput.addEventListener('input', validateToken);
+        environmentSelect.addEventListener('change', resetModels);
+        loadModelsBtn.addEventListener('click', loadModels);
+        sendBtn.addEventListener('click', sendMessage);
+        clearBtn.addEventListener('click', clearAllMessages);
+        debugModeToggle.addEventListener('change', toggleDebugMode);
+        
+        // Enhanced message input event handling
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent event bubbling
+                sendMessage();
+            }
+        });
+        
+        // Prevent Enter key from affecting other elements when message input is focused
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        // File upload handlers
+        fileDropZone.addEventListener('click', () => fileInput.click());
+        fileDropZone.addEventListener('dragover', handleDragOver);
+        fileDropZone.addEventListener('drop', handleDrop);
+        fileInput.addEventListener('change', handleFileSelect);
+
+        function debugLog(message) {
+            if (debugMode) {
+                console.log(`[DEBUG] ${message}`);
+                debugContent.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+                debugContent.scrollTop = debugContent.scrollHeight;
+            }
+        }
+
+        function toggleDebugMode() {
+            debugMode = debugModeToggle.checked;
+            debugInfo.classList.toggle('visible', debugMode);
+            if (!debugMode) {
+                debugContent.innerHTML = '';
+            }
+            debugLog('Debug mode toggled: ' + (debugMode ? 'ON' : 'OFF'));
+        }
+
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId);
+            const icon = content.previousElementSibling.querySelector('.fa-chevron-down');
+            
+            content.classList.toggle('expanded');
+            icon.style.transform = content.classList.contains('expanded') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+        function resetModels() {
+            debugLog('Resetting models');
+            modelSelector.innerHTML = '';
+            selectedModels = [];
+            chatWindows = {};
+            chatContainer.innerHTML = '';
+            updateInputState();
+            updateSelectedModelsInfo();
+        }
+
+        async function validateToken() {
+            const token = tokenInput.value.trim();
+            const environment = environmentSelect.value;
+            const statusDiv = document.getElementById('token-status');
+            
+            if (!token) {
+                statusDiv.innerHTML = '';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/validate_token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, environment })
+                });
+                
+                const data = await response.json();
+                
+                if (data.valid) {
+                    statusDiv.innerHTML = '<div class="status-success"><div class="status-dot"></div>Token is valid</div>';
+                } else {
+                    statusDiv.innerHTML = `<div class="status-error"><div class="status-dot"></div>${data.error || 'Invalid token'}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status-error"><div class="status-dot"></div>Connection error</div>';
+            }
+        }
+
+        async function loadModels() {
+            const token = tokenInput.value.trim();
+            const environment = environmentSelect.value;
+            
+            if (!token) {
+                showSystemMessage('Please enter a JWT token first');
+                return;
+            }
+
+            loadModelsBtn.disabled = true;
+            loadModelsBtn.innerHTML = '<span class="loading-spinner"></span> Loading...';
+
+            try {
+                const response = await fetch('/api/models', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, environment })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.models) {
+                    availableModels = data.models;
+                    renderModelSelector();
+                    debugLog(`Loaded ${data.models.length} models`);
+                    showSystemMessage(`Loaded ${data.models.length} models for ${environment} environment`);
+                } else {
+                    showSystemMessage(data.error || 'Failed to load models', 'error');
+                }
+            } catch (error) {
+                showSystemMessage('Connection error: ' + error.message, 'error');
+            } finally {
+                loadModelsBtn.disabled = false;
+                loadModelsBtn.innerHTML = '<i class="fas fa-download"></i> Load Models';
+            }
+        }
+
+        function renderModelSelector() {
+            modelSelector.innerHTML = availableModels.map(model => `
+                <div class="model-card" data-model-id="${model.id}" onclick="toggleModelSelection('${model.id}')">
+                    <h4>${model.name}</h4>
+                    <p>${model.provider} • ${model.context_limit} tokens</p>
+                </div>
+            `).join('');
+        }
+
+        function toggleModelSelection(modelId) {
+            const card = modelSelector.querySelector(`[data-model-id="${modelId}"]`);
+            const isSelected = selectedModels.includes(modelId);
+            
+            if (isSelected) {
+                selectedModels = selectedModels.filter(id => id !== modelId);
+                card.classList.remove('selected');
+                removeChatWindow(modelId);
+                debugLog(`Deselected model: ${modelId}`);
+            } else if (selectedModels.length < 4) {
+                selectedModels.push(modelId);
+                card.classList.add('selected');
+                createChatWindow(modelId);
+                debugLog(`Selected model: ${modelId}`);
+            } else {
+                showSystemMessage('Maximum 4 models can be selected', 'warning');
+                return;
+            }
+            
+            updateInputState();
+            updateSelectedModelsInfo();
+        }
+
+        function updateSelectedModelsInfo() {
+            if (selectedModels.length > 0) {
+                selectedModelsInfo.style.display = 'block';
+                selectedCountSpan.textContent = `${selectedModels.length} model${selectedModels.length !== 1 ? 's' : ''} selected`;
+            } else {
+                selectedModelsInfo.style.display = 'none';
+            }
+        }
+
+        function sanitizeModelId(modelId) {
+            // Replace periods and other invalid CSS selector characters with hyphens
+            return modelId.replace(/[.\s]/g, '-');
+        }
+
+        function createChatWindow(modelId) {
+            const model = availableModels.find(m => m.id === modelId);
+            if (!model) {
+                debugLog(`ERROR: Model ${modelId} not found in availableModels`);
+                return;
+            }
+            
+            // Check if window already exists
+            if (chatWindows[modelId]) {
+                debugLog(`Chat window for ${modelId} already exists`);
+                return;
+            }
+            
+            // Sanitize model ID for CSS selectors
+            const safeModelId = sanitizeModelId(modelId);
+            
+            const windowDiv = document.createElement('div');
+            windowDiv.className = 'chat-window glass-morphism';
+            windowDiv.id = `chat-${safeModelId}`;
+            
+            windowDiv.innerHTML = `
+                <div class="chat-header">
+                    <h4>${model.name}</h4>
+                    <span class="chat-status" id="status-${safeModelId}">Ready</span>
+                </div>
+                <div class="chat-messages" id="messages-${safeModelId}"></div>
+            `;
+            
+            chatContainer.appendChild(windowDiv);
+            
+            // Store references with better error checking
+            const messagesContainer = windowDiv.querySelector(`#messages-${safeModelId}`);
+            const statusElement = windowDiv.querySelector(`#status-${safeModelId}`);
+            
+            if (!messagesContainer || !statusElement) {
+                debugLog(`ERROR: Failed to find elements for model ${modelId} (safe: ${safeModelId})`);
+                windowDiv.remove();
+                return;
+            }
+            
+            chatWindows[modelId] = {
+                element: windowDiv,
+                messages: messagesContainer,
+                status: statusElement,
+                model: model,
+                safeId: safeModelId  // Store the sanitized ID for reference
+            };
+            
+            debugLog(`Created chat window for model: ${modelId} (DOM ID: ${safeModelId})`);
+        }
+
+        function removeChatWindow(modelId) {
+            const window = chatWindows[modelId];
+            if (window && window.element) {
+                window.element.remove();
+                delete chatWindows[modelId];
+                debugLog(`Removed chat window for model: ${modelId}`);
+            } else {
+                debugLog(`No chat window found to remove for model: ${modelId}`);
+            }
+        }
+
+        function updateInputState() {
+            const hasSelectedModels = selectedModels.length > 0;
+            messageInput.disabled = !hasSelectedModels;
+            sendBtn.disabled = !hasSelectedModels;
+        }
+
+        function updateFilesIndicator() {
+            if (uploadedFiles.length > 0) {
+                filesAttachedIndicator.classList.add('visible');
+                filesCountSpan.textContent = `${uploadedFiles.length} file${uploadedFiles.length !== 1 ? 's' : ''} attached`;
+            } else {
+                filesAttachedIndicator.classList.remove('visible');
+            }
+        }
+
+        function getParameters() {
+            const params = {};
+            
+            const temperature = document.getElementById('temperature').value;
+            const topP = document.getElementById('top-p').value;
+            const maxTokens = document.getElementById('max-tokens').value;
+            const seed = document.getElementById('seed').value;
+            
+            if (temperature) params.temperature = parseFloat(temperature);
+            if (topP) params.top_p = parseFloat(topP);
+            if (maxTokens) params.max_tokens = parseInt(maxTokens);
+            if (seed) params.seed = parseInt(seed);
+            
+            return params;
+        }
+
+        async function sendMessage() {
+            const token = tokenInput.value.trim();
+            const environment = environmentSelect.value;
+            const message = messageInput.value.trim();
+            const systemMessage = systemMessageInput.value.trim();
+            const stream = document.getElementById('stream').checked;
+            const parameters = getParameters();
+
+            if (!token || selectedModels.length === 0 || !message) {
+                showSystemMessage('Please fill in all required fields and select at least one model', 'warning');
+                return;
+            }
+
+            if (isStreaming) {
+                debugLog('Already streaming, ignoring request');
+                return;
+            }
+
+            debugLog(`Starting message send to ${selectedModels.length} models`);
+            debugLog(`Selected models: ${selectedModels.join(', ')}`);
+            debugLog(`Message: "${message.substring(0, 50)}..."`);
+            debugLog(`Files attached: ${uploadedFiles.length}`);
+            
+            // Verify all chat windows exist before starting
+            let missingWindows = [];
+            selectedModels.forEach(modelId => {
+                if (!chatWindows[modelId]) {
+                    missingWindows.push(modelId);
+                    debugLog(`ERROR: Missing chat window for ${modelId}, recreating...`);
+                    createChatWindow(modelId);
+                }
+            });
+            
+            if (missingWindows.length > 0) {
+                debugLog(`Recreated ${missingWindows.length} missing chat windows`);
+                // Small delay to ensure DOM is updated
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            // Add user message to all chat windows
+            selectedModels.forEach(modelId => {
+                addMessage(modelId, 'user', message);
+                setModelStatus(modelId, 'Generating...');
+            });
+
+            messageInput.value = '';
+            sendBtn.disabled = true;
+            messageInput.disabled = true;
+            isStreaming = true;
+
+            // Prepare file data with deep copy for safety
+            const fileData = uploadedFiles.map(file => ({
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                content: file.content // Base64 content
+            }));
+
+            debugLog(`Prepared file data for ${fileData.length} files`);
+
+            // Send to all selected models in parallel with proper error isolation
+            const promises = selectedModels.map(async (modelId, index) => {
+                try {
+                    debugLog(`Starting request ${index + 1}/${selectedModels.length} for model: ${modelId}`);
+                    await sendToModel(modelId, token, environment, message, systemMessage, stream, parameters, fileData);
+                    debugLog(`Completed request for model: ${modelId}`);
+                } catch (error) {
+                    debugLog(`Error in model ${modelId}: ${error.message}`);
+                    addMessage(modelId, 'error', `Request failed: ${error.message}`);
+                    throw error; // Re-throw to track in Promise.allSettled
+                }
+            });
+
+            try {
+                const results = await Promise.allSettled(promises);
+                const successful = results.filter(r => r.status === 'fulfilled').length;
+                const failed = results.filter(r => r.status === 'rejected').length;
+                debugLog(`Requests completed: ${successful} successful, ${failed} failed`);
+                
+                // Log any failures for debugging
+                results.forEach((result, index) => {
+                    if (result.status === 'rejected') {
+                        const modelId = selectedModels[index];
+                        debugLog(`Model ${modelId} failed: ${result.reason}`);
+                    }
+                });
+            } finally {
+                sendBtn.disabled = false;
+                messageInput.disabled = false;
+                isStreaming = false;
+                selectedModels.forEach(modelId => setModelStatus(modelId, 'Ready'));
+                debugLog('Message send completed');
+            }
+        }
+
+        async function sendToModel(modelId, token, environment, message, systemMessage, stream, parameters, fileData) {
+            const requestPayload = {
+                token,
+                environment,
+                model: modelId,
+                message,
+                system_message: systemMessage,
+                stream,
+                parameters,
+                files: fileData // Ensure files are included
+            };
+
+            debugLog(`Sending request to model ${modelId} with payload:`, {
+                model: modelId,
+                messageLength: message.length,
+                filesCount: fileData.length,
+                stream: stream
+            });
+
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Model-ID': modelId // Add model ID to headers for backend debugging
+                },
+                body: JSON.stringify(requestPayload)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
+            if (stream) {
+                const assistantMessage = addMessage(modelId, 'assistant', '');
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let chunks = 0;
+
+                try {
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const data = JSON.parse(line.slice(6));
+                                    chunks++;
+                                    
+                                    if (data.content) {
+                                        assistantMessage.textContent += data.content;
+                                        scrollToBottom(modelId);
+                                    }
+                                    
+                                    if (data.error) {
+                                        addMessage(modelId, 'error', data.error);
+                                        debugLog(`Stream error for ${modelId}: ${data.error}`);
+                                        break;
+                                    }
+                                    
+                                    if (data.done) {
+                                        debugLog(`Stream completed for ${modelId} after ${chunks} chunks`);
+                                        break;
+                                    }
+                                } catch (e) {
+                                    // Ignore parsing errors for partial chunks
+                                    debugLog(`Parse error for ${modelId}: ${e.message}`);
+                                }
+                            }
+                        }
+                    }
+                } finally {
+                    reader.releaseLock();
+                }
+            } else {
+                const data = await response.json();
+                if (data.response) {
+                    addMessage(modelId, 'assistant', data.response);
+                    debugLog(`Non-stream response received for ${modelId}`);
+                } else {
+                    throw new Error(data.error || 'No response received');
+                }
+            }
+        }
+
+        function addMessage(modelId, type, content) {
+            const chatWindow = chatWindows[modelId];
+            if (!chatWindow || !chatWindow.messages) {
+                debugLog(`ERROR: No chat window or messages container found for model ${modelId}`);
+                console.error(`Chat window missing for model: ${modelId}`, {
+                    availableWindows: Object.keys(chatWindows),
+                    selectedModels: selectedModels,
+                    windowExists: !!chatWindows[modelId],
+                    messagesExists: !!(chatWindows[modelId] && chatWindows[modelId].messages)
+                });
+                return null;
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${type}`;
+            messageDiv.textContent = content;
+            
+            chatWindow.messages.appendChild(messageDiv);
+            scrollToBottom(modelId);
+            
+            return messageDiv;
+        }
+
+        function setModelStatus(modelId, status) {
+            const chatWindow = chatWindows[modelId];
+            if (chatWindow && chatWindow.status) {
+                chatWindow.status.textContent = status;
+                debugLog(`Set status for ${modelId}: ${status}`);
+            } else {
+                debugLog(`ERROR: No status element found for model ${modelId}`);
+            }
+        }
+
+        function scrollToBottom(modelId) {
+            const chatWindow = chatWindows[modelId];
+            if (chatWindow && chatWindow.messages) {
+                chatWindow.messages.scrollTop = chatWindow.messages.scrollHeight;
+            }
+        }
+
+        function clearAllMessages() {
+            Object.keys(chatWindows).forEach(modelId => {
+                const messagesContainer = chatWindows[modelId]?.messages;
+                if (messagesContainer) {
+                    messagesContainer.innerHTML = '';
+                }
+            });
+            debugLog('Cleared all messages');
+        }
+
+        function showSystemMessage(message, type = 'system') {
+            debugLog(`System message (${type}): ${message}`);
+            // Show in the first available chat window
+            const firstModelId = selectedModels[0];
+            if (firstModelId && chatWindows[firstModelId]) {
+                addMessage(firstModelId, type, message);
+            } else {
+                console.log(`${type.toUpperCase()}: ${message}`);
+            }
+        }
+
+        // File handling functions
+        function handleDragOver(e) {
+            e.preventDefault();
+            fileDropZone.classList.add('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            fileDropZone.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            processFiles(files);
+        }
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            processFiles(files);
+        }
+
+        async function processFiles(files) {
+            debugLog(`Processing ${files.length} files`);
+            for (const file of files) {
+                try {
+                    debugLog(`Processing file: ${file.name} (${file.type}, ${file.size} bytes)`);
+                    const fileData = {
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        content: await readFileAsBase64(file)
+                    };
+                    
+                    uploadedFiles.push(fileData);
+                    displayUploadedFile(fileData);
+                    updateFilesIndicator();
+                    debugLog(`Successfully processed file: ${file.name}`);
+                } catch (error) {
+                    debugLog(`Error processing file ${file.name}: ${error.message}`);
+                    showSystemMessage(`Error processing file ${file.name}: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const base64 = reader.result.split(',')[1];
+                    debugLog(`File ${file.name} encoded to base64 (${base64.length} chars)`);
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function displayUploadedFile(fileData) {
+            const fileDiv = document.createElement('div');
+            fileDiv.className = 'file-item';
+            fileDiv.innerHTML = `
+                <i class="fas ${getFileIcon(fileData.type)}"></i>
+                <span>${fileData.name}</span>
+                <small>(${formatFileSize(fileData.size)})</small>
+                <button class="file-remove" onclick="removeFile('${fileData.name}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            uploadedFilesContainer.appendChild(fileDiv);
+        }
+
+        function getFileIcon(fileType) {
+            if (fileType.startsWith('image/')) return 'fa-image';
+            if (fileType.startsWith('video/')) return 'fa-video';
+            if (fileType.startsWith('audio/')) return 'fa-music';
+            if (fileType.includes('pdf')) return 'fa-file-pdf';
+            if (fileType.includes('zip')) return 'fa-file-archive';
+            return 'fa-file';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function removeFile(fileName) {
+            uploadedFiles = uploadedFiles.filter(file => file.name !== fileName);
+            
+            // Remove from UI
+            const fileItems = uploadedFilesContainer.querySelectorAll('.file-item');
+            fileItems.forEach(item => {
+                if (item.textContent.includes(fileName)) {
+                    item.remove();
+                }
+            });
+            
+            updateFilesIndicator();
+            debugLog(`Removed file: ${fileName}`);
+        }
+
+        // Initialize
+        showSystemMessage('Welcome to Grazie AI Studio! Enter your JWT token and load models to get started.');
+        debugLog('Application initialized');
+    </script>
+</body>
+</html> 

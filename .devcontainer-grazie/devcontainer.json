@@ -1,17 +1,13 @@
 {
-  "name": "Grazie Staging Integration Tests",
-  "image": "mcr.microsoft.com/devcontainers/python:3.11",
-
-  "features": {
-    "ghcr.io/devcontainers/features/git:1": {
-      "version": "latest"
-    }
-  },
+  "name": "Grazie AI Service - Flask Web App",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
 
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
-    "TEST_MODE": "devcontainer"
+    "WORKSPACE_ROOT": "/workspace"
   },
 
-  "postCreateCommand": "pip install --no-cache-dir requests sseclient-py"
+  "forwardPorts": [8000]
 }
