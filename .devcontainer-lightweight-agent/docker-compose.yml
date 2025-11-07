@@ -1,0 +1,19 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    # Publish port 35697 to the worker container's localhost
+    # This allows frp proxy to reach the service at 127.0.0.1:35697
+    ports:
+      - "35697:35697"
+
+    volumes:
+      - ../..:/workspace:cached
+
+    command: sleep infinity
+
+    environment:
+      PYTHONPATH: /workspace
+      WORKSPACE_ROOT: /workspace/orca-test-jcp-ai-workloads
