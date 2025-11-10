@@ -4,7 +4,7 @@ Flask>=2.0.0
 flask-cors>=5.0.0
 
 # Dependencies for the SDK-based Grazie client
-grazie_api_gateway_client>=1.0.0
+grazie_api_gateway_client>=0.3.3
 
 # Common dependencies for both clients
 typing-extensions>=4.0.0 
