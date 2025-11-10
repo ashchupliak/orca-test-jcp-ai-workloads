@@ -1,6 +1,7 @@
 # Dependencies for the original HTTP-based Grazie client
 requests>=2.25.0
 Flask>=2.0.0
+flask-cors>=5.0.0
 
 # Dependencies for the SDK-based Grazie client
 grazie_api_gateway_client>=1.0.0

@@ -4,6 +4,7 @@ Flask web app for Grazie AI client with advanced UI interface
 """
 
 from flask import Flask, render_template, request, jsonify, Response
+from flask_cors import CORS
 import json
 import traceback
 import base64
@@ -19,6 +20,9 @@ import logging
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size for video support
 
+# Enable CORS for all routes to allow requests from the Orca UI
+CORS(app, resources={r"/*": {"origins": "*"}})
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -29,6 +33,39 @@ logger = logging.getLogger(__name__)
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/chat', methods=['POST'])
+def simple_chat():
+    """Simple chat endpoint for testing container interaction - no auth required"""
+    try:
+        from datetime import datetime
+        from uuid import uuid4
+
+        data = request.get_json()
+        message = data.get('message', '')
+        session_id = data.get('session_id') or str(uuid4())
+
+        # Simple echo response
+        response_text = f"Hello! You said: {message}"
+
+        # Add some personality based on common greetings
+        if message.lower().strip() in ['hello', 'hi', 'hey']:
+            response_text = "Hello! I'm the Grazie chat service running in your Orca environment. How can I help you?"
+        elif message.lower().strip() in ['bye', 'goodbye']:
+            response_text = "Goodbye! Thanks for chatting with the Grazie service."
+
+        return jsonify({
+            'response': response_text,
+            'session_id': session_id,
+            'timestamp': datetime.utcnow().isoformat() + 'Z',
+            'metadata': {
+                'service': 'grazie',
+                'message_length': len(message)
+            }
+        })
+    except Exception as e:
+        logger.error(f"Error in simple_chat: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/models', methods=['POST'])
 def get_models():
