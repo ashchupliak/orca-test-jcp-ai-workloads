@@ -470,12 +470,39 @@ def chat():
                 logger.info(f"Non-streaming response completed for model: {model}")
                 return jsonify({'response': response})
             except Exception as e:
-                logger.error(f"Non-streaming error for model {model}: {str(e)}\n{traceback.format_exc()}")
-                return jsonify({'error': str(e)}), 500
-    
+                error_msg = str(e)
+                logger.error(f"Non-streaming error for model {model}: {error_msg}\n{traceback.format_exc()}")
+
+                # Provide more helpful error messages
+                if "401" in error_msg or "Unauthorized" in error_msg:
+                    error_msg = "Authentication failed. Please check your Grazie token is valid and not expired."
+                elif "403" in error_msg or "Forbidden" in error_msg:
+                    error_msg = f"Access denied for model '{model}'. Your token may not have permission to use this model."
+                elif "404" in error_msg or "Not Found" in error_msg:
+                    error_msg = f"Model '{model}' not found or chat endpoint unavailable. Please try a different model."
+                elif "timeout" in error_msg.lower():
+                    error_msg = "Request timed out. Please try again."
+
+                return jsonify({'error': error_msg}), 500
+
+    except ValueError as e:
+        # Handle validation errors with 400 status
+        error_msg = str(e)
+        logger.error(f"Chat validation error: {error_msg}")
+        return jsonify({'error': error_msg}), 400
     except Exception as e:
-        logger.error(f"Chat endpoint error: {str(e)}\n{traceback.format_exc()}")
-        return jsonify({'error': str(e)}), 500
+        error_msg = str(e)
+        logger.error(f"Chat endpoint error: {error_msg}\n{traceback.format_exc()}")
+
+        # Provide more helpful error messages
+        if "401" in error_msg or "Unauthorized" in error_msg:
+            error_msg = "Authentication failed. Please check your Grazie token is valid and not expired."
+        elif "403" in error_msg or "Forbidden" in error_msg:
+            error_msg = "Access denied. Your token may not have the required permissions."
+        elif "Connection" in error_msg or "connection" in error_msg:
+            error_msg = "Failed to connect to Grazie API. Please check your network connection."
+
+        return jsonify({'error': error_msg}), 500
     finally:
         logger.info(f"=== CHAT REQUEST END ===")
 

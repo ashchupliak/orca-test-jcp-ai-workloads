@@ -113,23 +113,14 @@ class GrazieClient:
                 }
     
     def _test_chat_availability(self):
-        try:
-            chat_endpoint = self.CHAT_ENDPOINTS.get(self.environment, "/user/v5/llm/chat/stream")
-            test_payload = {
-                "profile": "openai-gpt-4o",
-                "chat": {"messages": [{"type": "user_message", "content": "test"}]}
-            }
-            response = requests.post(
-                f"{self.base_url}{chat_endpoint}",
-                headers=self._get_headers(),
-                json=test_payload,
-                timeout=5,
-                stream=True
-            )
-            self.chat_available = response.status_code == 200
-            response.close()
-        except Exception:
-            self.chat_available = False
+        """
+        Test chat availability by checking if we can access the chat endpoint.
+        Note: We don't test with a specific model since model availability varies by token.
+        We just set chat_available to True if we have a valid token (already validated).
+        """
+        # If token validation passed, assume chat is available
+        # Actual chat requests will fail with specific errors if there are issues
+        self.chat_available = True
     
     def _get_headers(self) -> Dict[str, str]:
         if not self.jwt_token:
