@@ -9,5 +9,7 @@
     "WORKSPACE_ROOT": "/workspace"
   },
 
-  "forwardPorts": [8000]
+  "forwardPorts": [8000],
+
+  "postStartCommand": "bash /workspace/grazie-service/start-server.sh"
 }
