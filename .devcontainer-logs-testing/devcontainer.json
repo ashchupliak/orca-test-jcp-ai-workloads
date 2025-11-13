@@ -1,11 +1,6 @@
 {
   "name": "Logs Testing",
-  "image": "mcr.microsoft.com/devcontainers/python:3.11",
-  "features": {
-    "ghcr.io/devcontainers/features/git:1": {
-      "version": "latest"
-    }
-  },
+  "image": "python:3.11-slim",
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
     "TEST_MODE": "devcontainer",
