@@ -11,6 +11,7 @@ def log_with_marker(message, stream=sys.stdout):
 
 def main():
     log_with_marker("Container started")
+    time.sleep(20)  # Give log-sender time to upload
 
     stages = [
         ("Setup", "Installing dependencies"),
@@ -23,11 +24,13 @@ def main():
     for i, (stage, action) in enumerate(stages, 1):
         log_with_marker(f"Stage {i}/5: {stage} started")
         log_with_marker(f"Stage {i}/5: {action}...")
-        time.sleep(1)
+        time.sleep(10)  # Longer delays between stages
         log_with_marker(f"Stage {i}/5: {stage} completed")
 
     log_with_marker("All stages completed successfully")
+    time.sleep(10)
     log_with_marker("Container exiting")
+    time.sleep(20)  # Final flush time
     sys.exit(0)
 
 if __name__ == "__main__":
