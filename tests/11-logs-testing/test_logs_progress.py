@@ -11,6 +11,7 @@ def log_with_marker(message, stream=sys.stdout):
 
 def main():
     log_with_marker("Container started - showing progress bar")
+    time.sleep(30)  # Give log-sender time to upload
 
     total_steps = 50
     marker = "[LOGS-TEST-PROGRESS]"
@@ -22,12 +23,14 @@ def main():
         timestamp = datetime.utcnow().isoformat() + "Z"
 
         print(f"\r{timestamp} {marker} Downloading: [{bar}] {pct}%", end="", flush=True)
-        time.sleep(0.1)
+        time.sleep(0.5)  # Slower progress to give time for upload
 
     print()
 
     log_with_marker("Progress bar completed")
+    time.sleep(10)
     log_with_marker("Container exiting")
+    time.sleep(20)  # Final flush time
     sys.exit(0)
 
 if __name__ == "__main__":
