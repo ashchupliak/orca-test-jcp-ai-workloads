@@ -1,0 +1,12 @@
+{
+  "name": "Config Override Test - Path",
+  "image": "python:3.11-slim",
+  "postCreateCommand": "bash /workspace/.devcontainer-config-override/init.sh",
+  "remoteEnv": {
+    "CONFIG_SOURCE": "config-override-path",
+    "CONFIG_TYPE": "path",
+    "CONTAINER_NAME": "config-override-test",
+    "TEST_MODE": "devcontainer",
+    "PYTHONPATH": "/workspace"
+  }
+}
