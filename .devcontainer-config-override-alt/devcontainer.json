@@ -1,0 +1,13 @@
+{
+  "name": "Config Override Test - Alternative",
+  "image": "python:3.11-slim",
+  "postCreateCommand": "bash /workspaces/orca-test-jcp-ai-workloads/.devcontainer-config-override-alt/init.sh",
+  "remoteEnv": {
+    "CONFIG_SOURCE": "alternative-config",
+    "CONFIG_TYPE": "path",
+    "CONTAINER_NAME": "config-override-alternative",
+    "TEST_MODE": "devcontainer-alternative",
+    "PYTHONPATH": "/workspaces/orca-test-jcp-ai-workloads",
+    "ALTERNATIVE_CONFIG": "true"
+  }
+}
