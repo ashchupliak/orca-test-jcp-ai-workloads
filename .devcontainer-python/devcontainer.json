@@ -9,9 +9,12 @@
   },
 
   "remoteEnv": {
-    "PYTHONPATH": "/workspace",
-    "TEST_MODE": "devcontainer"
+    "PYTHONPATH": "/workspaces/orca-test-jcp-ai-workloads",
+    "TEST_MODE": "devcontainer",
+    "CONTAINER_NAME": "python"
   },
 
-  "postCreateCommand": "pip install --no-cache-dir requests flask pytest"
+  "postCreateCommand": "pip install --no-cache-dir requests flask pytest",
+  "postStartCommand": "/workspaces/orca-test-jcp-ai-workloads/common/start-services.sh sleep infinity &",
+  "forwardPorts": [8000]
 }
