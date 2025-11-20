@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer-ai-tools/Dockerfile
+
+    # Publish port 8000 for web services
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ..:/workspace:cached
+
+    command: sleep infinity
+
+    environment:
+      PYTHONPATH: /workspace
+      WORKSPACE_ROOT: /workspace
+      # These will be overridden by Orca environment variables
+      GRAZIE_API_TOKEN: ${GRAZIE_API_TOKEN:-}
+      GRAZIE_ENVIRONMENT: ${GRAZIE_ENVIRONMENT:-PREPROD}
