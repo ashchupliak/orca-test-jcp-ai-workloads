@@ -66,8 +66,8 @@ echo "✅ Claude Code configured at ~/.config/claude-code/config.json"
 echo ""
 echo "Creating helper scripts..."
 
-# Codex helper script
-cat > /usr/local/bin/codex-jb <<'EOF'
+# Codex helper script - write to temp file first, then move with sudo
+cat > /tmp/codex-jb <<'EOF'
 #!/bin/bash
 # Wrapper for Codex CLI with JetBrains AI Platform
 if [ -z "$GRAZIE_API_TOKEN" ]; then
@@ -82,12 +82,13 @@ fi
 
 exec codex -c model_provider=jbai "$@"
 EOF
-chmod +x /usr/local/bin/codex-jb
+sudo mv /tmp/codex-jb /usr/local/bin/codex-jb
+sudo chmod +x /usr/local/bin/codex-jb
 
 echo "✅ Created helper script: codex-jb"
 
-# Claude Code helper script
-cat > /usr/local/bin/claude-jb <<'EOF'
+# Claude Code helper script - write to temp file first, then move with sudo
+cat > /tmp/claude-jb <<'EOF'
 #!/bin/bash
 # Wrapper for Claude Code with JetBrains AI Platform
 if [ -z "$GRAZIE_API_TOKEN" ]; then
@@ -108,7 +109,8 @@ jq --arg token "$GRAZIE_API_TOKEN" \
 
 exec claude-code "$@"
 EOF
-chmod +x /usr/local/bin/claude-jb
+sudo mv /tmp/claude-jb /usr/local/bin/claude-jb
+sudo chmod +x /usr/local/bin/claude-jb
 
 echo "✅ Created helper script: claude-jb"
 
