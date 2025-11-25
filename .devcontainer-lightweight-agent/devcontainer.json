@@ -9,5 +9,6 @@
     "WORKSPACE_ROOT": "/workspace"
   },
 
+  "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
   "forwardPorts": [8000, 8001, 35697]
 }
