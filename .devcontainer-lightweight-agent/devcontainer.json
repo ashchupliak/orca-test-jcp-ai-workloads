@@ -9,5 +9,5 @@
     "WORKSPACE_ROOT": "/workspace"
   },
 
-  "forwardPorts": [35697]
+  "forwardPorts": [8000, 8001, 35697]
 }

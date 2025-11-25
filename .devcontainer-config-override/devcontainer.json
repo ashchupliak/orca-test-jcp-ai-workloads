@@ -2,6 +2,7 @@
   "name": "Config Override Test - Path",
   "image": "python:3.11-slim",
   "postCreateCommand": "bash /workspaces/orca-test-jcp-ai-workloads/.devcontainer-config-override/init.sh",
+  "forwardPorts": [8000, 8001],
   "remoteEnv": {
     "CONFIG_SOURCE": "config-override-path",
     "CONFIG_TYPE": "path",

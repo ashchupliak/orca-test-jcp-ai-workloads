@@ -1,7 +1,6 @@
 {
   "name": "Java Development Tests",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest"
@@ -15,10 +14,15 @@
       "installGradle": "true"
     }
   },
-
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
     "TEST_MODE": "devcontainer",
-    "JAVA_HOME": "/usr/local/sdkman/candidates/java/current"
-  }
+    "JAVA_HOME": "/usr/local/sdkman/candidates/java/current",
+    "CONTAINER_NAME": "java"
+  },
+  "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
+  "forwardPorts": [
+    8000,
+    8001
+  ]
 }

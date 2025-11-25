@@ -1,7 +1,6 @@
 {
   "name": "Ruby Development Tests",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest"
@@ -11,9 +10,14 @@
     },
     "ghcr.io/devcontainers/features/ruby:1": {}
   },
-
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
-    "TEST_MODE": "devcontainer"
-  }
+    "TEST_MODE": "devcontainer",
+    "CONTAINER_NAME": "ruby"
+  },
+  "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
+  "forwardPorts": [
+    8000,
+    8001
+  ]
 }

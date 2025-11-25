@@ -1,7 +1,6 @@
 {
   "name": "Docker-in-Docker Tests",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest"
@@ -11,15 +10,18 @@
     },
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
-
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
-
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
-    "TEST_MODE": "devcontainer"
+    "TEST_MODE": "devcontainer",
+    "CONTAINER_NAME": "docker"
   },
-
-  "postCreateCommand": "pip install --no-cache-dir flask redis"
+  "postCreateCommand": "pip install --no-cache-dir flask redis",
+  "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
+  "forwardPorts": [
+    8000,
+    8001
+  ]
 }

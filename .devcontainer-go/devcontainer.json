@@ -1,7 +1,6 @@
 {
   "name": "Go Development Tests",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest"
@@ -13,10 +12,15 @@
       "version": "latest"
     }
   },
-
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
     "TEST_MODE": "devcontainer",
-    "GOPATH": "/go"
-  }
+    "GOPATH": "/go",
+    "CONTAINER_NAME": "go"
+  },
+  "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
+  "forwardPorts": [
+    8000,
+    8001
+  ]
 }

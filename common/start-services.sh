@@ -1,5 +1,5 @@
 #!/bin/bash
-# Start SSH and Chat services for Orca containers
+# Start SSH, Chat, and Agent services for Orca containers
 
 set -e
 
@@ -42,15 +42,45 @@ else
     fi
 fi
 
+# Install agent service dependencies
+if [ ! -d "/workspace/common/agent-service" ]; then
+    echo "ERROR: Agent service not found at /workspace/common/agent-service"
+    echo "Make sure the workspace is mounted correctly"
+else
+    echo "Installing agent service dependencies..."
+    cd /workspace/common/agent-service
+
+    # Install Flask if not already installed
+    pip3 install --quiet --no-cache-dir -r requirements.txt || echo "Flask already installed"
+
+    # Start agent service in background
+    echo "Starting agent service on port 8001..."
+    nohup python3 app.py > /tmp/agent-service.log 2>&1 &
+    AGENT_PID=$!
+    echo "Agent service started with PID: $AGENT_PID"
+
+    # Wait a moment and check if service is running
+    sleep 2
+    if ps -p $AGENT_PID > /dev/null; then
+        echo "✓ Agent service is running"
+        echo "  Check logs: tail -f /tmp/agent-service.log"
+    else
+        echo "✗ Agent service failed to start"
+        echo "  Check logs: cat /tmp/agent-service.log"
+    fi
+fi
+
 echo ""
 echo "=== Services Status ==="
 echo "SSH: $(service ssh status 2>&1 | head -1 || echo 'Not available')"
 echo "Chat: http://localhost:8000/health"
+echo "Agent: http://localhost:8001/health"
 echo ""
 echo "=== Ready for connections ==="
 echo "Terminal: ssh root@localhost (password: root)"
-echo "Chat API: curl http://localhost:8000/chat"
-echo "Logs: tail -f /tmp/chat-service.log"
+echo "Chat API: curl http://localhost:8000/api/chat"
+echo "Agent API: curl http://localhost:8001/api/agent/start"
+echo "Logs: tail -f /tmp/chat-service.log /tmp/agent-service.log"
 echo ""
 
 # Keep container running

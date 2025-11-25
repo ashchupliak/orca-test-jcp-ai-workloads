@@ -16,5 +16,5 @@
 
   "postCreateCommand": "pip install --no-cache-dir requests flask pytest",
   "postStartCommand": "/workspaces/orca-test-jcp-ai-workloads/common/start-services.sh sleep infinity &",
-  "forwardPorts": [8000]
+  "forwardPorts": [8000, 8001]
 }

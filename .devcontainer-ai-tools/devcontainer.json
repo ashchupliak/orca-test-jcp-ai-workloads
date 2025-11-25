@@ -11,7 +11,7 @@
     "GRAZIE_API_TOKEN": "${localEnv:GRAZIE_API_TOKEN:}"
   },
 
-  "forwardPorts": [8000],
+  "forwardPorts": [8000, 8001],
 
   "postCreateCommand": "setup-ai-tools.sh",
 

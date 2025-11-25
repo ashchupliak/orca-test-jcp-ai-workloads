@@ -1,7 +1,6 @@
 {
   "name": "Database Client Tests",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest"
@@ -10,11 +9,15 @@
       "version": "3.11"
     }
   },
-
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
-    "TEST_MODE": "devcontainer"
+    "TEST_MODE": "devcontainer",
+    "CONTAINER_NAME": "databases"
   },
-
-  "postCreateCommand": "apt-get update && apt-get install -y postgresql-client mysql-client redis-tools mongodb-clients libpq-dev && rm -rf /var/lib/apt/lists/* && pip install --no-cache-dir psycopg2-binary pymongo redis mysql-connector-python"
+  "postCreateCommand": "apt-get update && apt-get install -y postgresql-client mysql-client redis-tools mongodb-clients libpq-dev && rm -rf /var/lib/apt/lists/* && pip install --no-cache-dir psycopg2-binary pymongo redis mysql-connector-python",
+  "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
+  "forwardPorts": [
+    8000,
+    8001
+  ]
 }

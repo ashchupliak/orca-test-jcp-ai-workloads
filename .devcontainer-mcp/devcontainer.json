@@ -1,7 +1,6 @@
 {
   "name": "MCP (Model Context Protocol) Tests",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest"
@@ -13,11 +12,15 @@
       "version": "lts"
     }
   },
-
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
-    "TEST_MODE": "devcontainer"
+    "TEST_MODE": "devcontainer",
+    "CONTAINER_NAME": "mcp"
   },
-
-  "postCreateCommand": "npm install -g @modelcontextprotocol/sdk"
+  "postCreateCommand": "npm install -g @modelcontextprotocol/sdk",
+  "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
+  "forwardPorts": [
+    8000,
+    8001
+  ]
 }

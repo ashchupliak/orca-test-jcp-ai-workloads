@@ -1,7 +1,6 @@
 {
   "name": "Agent Filesystem and Command Tests",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest"
@@ -10,10 +9,15 @@
       "version": "3.11"
     }
   },
-
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
     "TEST_MODE": "devcontainer",
-    "PATH": "${PATH}:/workspace/bin"
-  }
+    "PATH": "${PATH}:/workspace/bin",
+    "CONTAINER_NAME": "agents"
+  },
+  "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
+  "forwardPorts": [
+    8000,
+    8001
+  ]
 }

@@ -1,6 +1,7 @@
 {
   "name": "Logs Testing",
   "image": "python:3.11-slim",
+  "forwardPorts": [8000, 8001],
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
     "TEST_MODE": "devcontainer",
