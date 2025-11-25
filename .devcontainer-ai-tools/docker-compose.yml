@@ -3,6 +3,8 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer-ai-tools/Dockerfile
+      platforms:
+        - linux/amd64
 
     # Publish port 8000 for web services
     ports:

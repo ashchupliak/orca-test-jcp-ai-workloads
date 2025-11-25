@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
 
     # Publish port 35697 to the worker container's localhost
     # This allows frp proxy to reach the service at 127.0.0.1:35697
