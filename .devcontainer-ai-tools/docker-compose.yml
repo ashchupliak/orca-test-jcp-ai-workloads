@@ -6,9 +6,10 @@ services:
       platforms:
         - linux/amd64
 
-    # Publish port 8000 for web services
+    # Publish ports for Grazie chat (8000) and Agent service (8001)
     ports:
       - "8000:8000"
+      - "8001:8001"
 
     volumes:
       - ..:/workspace:cached

@@ -6,10 +6,10 @@ services:
       platforms:
         - linux/amd64
 
-    # Publish port 8000 to the worker container's localhost
-    # This allows frp proxy to reach Grazie at 127.0.0.1:8000
+    # Publish ports for Grazie chat (8000) and Agent service (8001)
     ports:
       - "8000:8000"
+      - "8001:8001"
 
     volumes:
       - ..:/workspace:cached
@@ -19,3 +19,5 @@ services:
     environment:
       PYTHONPATH: /workspace
       WORKSPACE_ROOT: /workspace
+      GRAZIE_API_TOKEN: ${GRAZIE_API_TOKEN:-}
+      GRAZIE_ENVIRONMENT: ${GRAZIE_ENVIRONMENT:-PREPROD}

@@ -6,10 +6,12 @@
 
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
-    "WORKSPACE_ROOT": "/workspace"
+    "WORKSPACE_ROOT": "/workspace",
+    "GRAZIE_ENVIRONMENT": "${localEnv:GRAZIE_ENVIRONMENT:PREPROD}",
+    "GRAZIE_API_TOKEN": "${localEnv:GRAZIE_API_TOKEN:}"
   },
 
   "forwardPorts": [8000, 8001],
 
-  "postStartCommand": "bash /workspace/grazie-service/start-server.sh"
+  "postStartCommand": "bash /workspace/.devcontainer-grazie/start-server.sh"
 }

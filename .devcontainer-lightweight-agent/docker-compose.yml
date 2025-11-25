@@ -6,9 +6,10 @@ services:
       platforms:
         - linux/amd64
 
-    # Publish port 35697 to the worker container's localhost
-    # This allows frp proxy to reach the service at 127.0.0.1:35697
+    # Publish ports for services
     ports:
+      - "8000:8000"
+      - "8001:8001"
       - "35697:35697"
 
     volumes:
@@ -19,3 +20,5 @@ services:
     environment:
       PYTHONPATH: /workspace
       WORKSPACE_ROOT: /workspace
+      GRAZIE_API_TOKEN: ${GRAZIE_API_TOKEN:-}
+      GRAZIE_ENVIRONMENT: ${GRAZIE_ENVIRONMENT:-PREPROD}

@@ -233,6 +233,39 @@ EOF
 
 echo "✅ Created AI_TOOLS_README.md"
 
+# === Install Python dependencies for services ===
+echo ""
+echo "Installing Python dependencies for services..."
+
+# Install dependencies for grazie-service
+cd /workspace/grazie-service
+if [ ! -d "venv" ]; then
+    python3 -m venv venv
+fi
+./venv/bin/pip install -r requirements.txt --quiet 2>/dev/null || pip install flask flask-cors --quiet
+
+# Install dependencies for agent-service
+cd /workspace/agent-service
+pip install -r requirements.txt --quiet 2>/dev/null || pip install flask flask-cors --quiet
+
+echo "✅ Python dependencies installed"
+
+# === Start services ===
+echo ""
+echo "Starting web services..."
+
+# Start grazie-service on port 8000 in background
+cd /workspace/grazie-service
+(./venv/bin/python run_web_app.py 2>&1 | while read line; do echo "[grazie] $line"; done) &
+
+# Start agent-service on port 8001 in background
+cd /workspace/agent-service
+(python run_agent_service.py 2>&1 | while read line; do echo "[agent] $line"; done) &
+
+echo "✅ Services starting..."
+echo "   - Grazie Chat: http://localhost:8000"
+echo "   - Agent API:   http://localhost:8001"
+
 # === Print summary ===
 echo ""
 echo "==================================="
