@@ -63,9 +63,12 @@ class GrazieProxyHandler(BaseHTTPRequestHandler):
             self.send_error(401, 'No GRAZIE_API_TOKEN or x-api-key provided')
             return
 
-        # Build target URL
-        target_url = f"{get_grazie_url()}{self.path}"
-        print(f"[proxy] {self.command} -> {target_url}", file=sys.stderr)
+        # Build target URL - re-check environment each time for dynamic switching
+        grazie_url = get_grazie_url()
+        target_url = f"{grazie_url}{self.path}"
+        env = os.environ.get('GRAZIE_ENVIRONMENT', 'PREPROD')
+        print(f"[proxy] {self.command} {self.path} -> {target_url} (env={env})", file=sys.stderr)
+        sys.stderr.flush()
 
         # Read request body
         content_length = int(self.headers.get('Content-Length', 0))

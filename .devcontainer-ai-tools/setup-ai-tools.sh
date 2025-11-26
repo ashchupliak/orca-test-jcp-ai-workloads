@@ -182,7 +182,10 @@ export ANTHROPIC_API_KEY="$GRAZIE_API_TOKEN"
 export ANTHROPIC_BASE_URL="http://127.0.0.1:$PROXY_PORT"
 
 echo "[claude-jb] Proxy URL: $ANTHROPIC_BASE_URL"
-echo "[claude-jb] Executing: $CLAUDE_BIN $@"
+echo "[claude-jb] Executing: $CLAUDE_BIN $@" >&2
+
+# Flush output before exec
+sync
 
 exec $CLAUDE_BIN "$@"
 WRAPPER_EOF
