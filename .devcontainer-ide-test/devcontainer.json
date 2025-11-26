@@ -23,7 +23,7 @@
   },
 
   "postCreateCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/ide/setup-ide.sh",
-  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/ide/start-ide.sh &",
+  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/ide/start-ide.sh",
 
   "forwardPorts": [8000, 8001, 8080],
 
