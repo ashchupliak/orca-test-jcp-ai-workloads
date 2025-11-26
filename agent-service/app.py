@@ -406,6 +406,22 @@ def index():
     })
 
 
+@app.route('/health', methods=['GET'])
+def health():
+    """Health check endpoint for orca-lab connectivity"""
+    import platform
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.utcnow().isoformat() + 'Z',
+        'container': os.environ.get('CONTAINER_NAME', 'agent'),
+        'hostname': platform.node(),
+        'python_version': platform.python_version(),
+        'service': 'agent-service',
+        'port': 8001,
+        'active_sessions': len(sessions)
+    })
+
+
 @app.route('/api/agent/execute', methods=['POST'])
 def execute_agent():
     """Start agent execution for a task"""

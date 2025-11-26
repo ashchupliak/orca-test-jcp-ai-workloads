@@ -8,13 +8,14 @@
     "PYTHONPATH": "/workspace",
     "WORKSPACE_ROOT": "/workspace",
     "GRAZIE_ENVIRONMENT": "${localEnv:GRAZIE_ENVIRONMENT:PREPROD}",
-    "GRAZIE_API_TOKEN": "${localEnv:GRAZIE_API_TOKEN:}"
+    "GRAZIE_API_TOKEN": "${localEnv:GRAZIE_API_TOKEN:}",
+    "CONTAINER_NAME": "ai-tools"
   },
 
   "forwardPorts": [8000, 8001],
 
   "postCreateCommand": "setup-ai-tools.sh",
-  "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
+  "postStartCommand": "sleep infinity &",
 
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {

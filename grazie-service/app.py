@@ -5,6 +5,7 @@ Flask web app for Grazie AI client with advanced UI interface
 
 from flask import Flask, render_template, request, jsonify, Response
 from flask_cors import CORS
+from datetime import datetime
 import json
 import traceback
 import base64
@@ -33,6 +34,21 @@ logger = logging.getLogger(__name__)
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/health', methods=['GET'])
+def health():
+    """Health check endpoint for orca-lab connectivity"""
+    import platform
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.utcnow().isoformat() + 'Z',
+        'container': os.environ.get('CONTAINER_NAME', 'grazie'),
+        'hostname': platform.node(),
+        'python_version': platform.python_version(),
+        'service': 'grazie-chat',
+        'port': 8000
+    })
 
 @app.route('/chat', methods=['POST'])
 def simple_chat():
