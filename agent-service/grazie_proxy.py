@@ -13,11 +13,11 @@ import urllib.request
 import urllib.error
 import ssl
 
-# Grazie API endpoints
+# Grazie API endpoints (without /v1 - Claude Code adds it)
 GRAZIE_ENDPOINTS = {
-    'STAGING': 'https://api-preprod.jetbrains.ai/user/v5/llm/anthropic/v1',
-    'PREPROD': 'https://api-preprod.jetbrains.ai/user/v5/llm/anthropic/v1',
-    'PRODUCTION': 'https://api.jetbrains.ai/user/v5/llm/anthropic/v1',
+    'STAGING': 'https://api-preprod.jetbrains.ai/user/v5/llm/anthropic',
+    'PREPROD': 'https://api-preprod.jetbrains.ai/user/v5/llm/anthropic',
+    'PRODUCTION': 'https://api.jetbrains.ai/user/v5/llm/anthropic',
 }
 
 def get_grazie_url():
