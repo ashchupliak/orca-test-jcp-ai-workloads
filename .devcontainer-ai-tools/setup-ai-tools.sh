@@ -43,8 +43,31 @@ EOF
 
 echo "✅ Codex CLI configured at ~/.codex/config.toml"
 
-# === Setup Claude Code (if available) ===
+# === Install and Setup Claude Code ===
 echo ""
+echo "Installing Claude Code..."
+
+# Install Claude Code via npm
+if ! command -v claude &> /dev/null && ! command -v claude-code &> /dev/null; then
+    npm install -g @anthropic-ai/claude-code 2>/dev/null || {
+        echo "⚠️  Claude Code npm install failed, trying alternative..."
+        # Alternative: install via npx or skip
+        echo "   You can install manually: npm install -g @anthropic-ai/claude-code"
+    }
+fi
+
+# Check if installation succeeded
+if command -v claude &> /dev/null; then
+    echo "✅ Claude Code installed (as 'claude')"
+    CLAUDE_CMD="claude"
+elif command -v claude-code &> /dev/null; then
+    echo "✅ Claude Code installed (as 'claude-code')"
+    CLAUDE_CMD="claude-code"
+else
+    echo "⚠️  Claude Code not found - helper script will fail until installed"
+    CLAUDE_CMD="claude"  # Default, will error when used
+fi
+
 echo "Configuring Claude Code..."
 
 mkdir -p ~/.config/claude-code
@@ -88,10 +111,11 @@ sudo chmod +x /usr/local/bin/codex-jb
 echo "✅ Created helper script: codex-jb"
 
 # Claude Code helper script - write to temp file first, then move with sudo
-cat > /tmp/claude-jb <<'EOF'
+# Use the detected command name (claude or claude-code)
+cat > /tmp/claude-jb <<EOF
 #!/bin/bash
 # Wrapper for Claude Code with JetBrains AI Platform
-if [ -z "$GRAZIE_API_TOKEN" ]; then
+if [ -z "\$GRAZIE_API_TOKEN" ]; then
     echo "ERROR: GRAZIE_API_TOKEN environment variable not set"
     echo "Get your token from: https://platform.jetbrains.ai/"
     echo ""
@@ -101,13 +125,30 @@ if [ -z "$GRAZIE_API_TOKEN" ]; then
     exit 1
 fi
 
-# Update config with current token
-jq --arg token "$GRAZIE_API_TOKEN" \
-   '.customHeaders["Grazie-Authenticate-JWT"] = $token' \
-   ~/.config/claude-code/config.json > ~/.config/claude-code/config.json.tmp \
-   && mv ~/.config/claude-code/config.json.tmp ~/.config/claude-code/config.json
+# Find the actual claude command
+CLAUDE_BIN=""
+for cmd in claude claude-code; do
+    if command -v \$cmd &> /dev/null; then
+        CLAUDE_BIN=\$cmd
+        break
+    fi
+done
 
-exec claude-code "$@"
+if [ -z "\$CLAUDE_BIN" ]; then
+    echo "ERROR: Claude Code CLI not found"
+    echo "Install with: npm install -g @anthropic-ai/claude-code"
+    exit 1
+fi
+
+# Update config with current token
+if command -v jq &> /dev/null && [ -f ~/.config/claude-code/config.json ]; then
+    jq --arg token "\$GRAZIE_API_TOKEN" \
+       '.customHeaders["Grazie-Authenticate-JWT"] = \$token' \
+       ~/.config/claude-code/config.json > ~/.config/claude-code/config.json.tmp \
+       && mv ~/.config/claude-code/config.json.tmp ~/.config/claude-code/config.json
+fi
+
+exec \$CLAUDE_BIN "\$@"
 EOF
 sudo mv /tmp/claude-jb /usr/local/bin/claude-jb
 sudo chmod +x /usr/local/bin/claude-jb
