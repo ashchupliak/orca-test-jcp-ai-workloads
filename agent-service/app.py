@@ -419,13 +419,24 @@ def run_git_task(session: AgentSession):
 
         # Clone repository
         session.add_progress(f"Cloning repository: {git_repo_url}")
-        repo_name = git_repo_url.split('/')[-1].replace('.git', '')
+
+        # Convert SSH URL to HTTPS URL if needed
+        # SSH format: git@github.com:owner/repo.git
+        # HTTPS format: https://github.com/owner/repo.git
+        normalized_url = git_repo_url
+        if git_repo_url.startswith('git@github.com:'):
+            # Convert SSH to HTTPS
+            repo_part = git_repo_url.replace('git@github.com:', '')
+            normalized_url = f'https://github.com/{repo_part}'
+            session.add_progress(f"Converted SSH URL to HTTPS: {normalized_url}")
+
+        repo_name = normalized_url.split('/')[-1].replace('.git', '')
         repo_path = workspace / repo_name
 
         # Build authenticated clone URL
-        clone_url = git_repo_url
-        if git_token and 'github.com' in git_repo_url:
-            clone_url = git_repo_url.replace('https://', f'https://{git_token}@')
+        clone_url = normalized_url
+        if git_token and 'github.com' in normalized_url:
+            clone_url = normalized_url.replace('https://', f'https://{git_token}@')
 
         if repo_path.exists():
             session.add_progress("Repository exists, fetching latest...")
