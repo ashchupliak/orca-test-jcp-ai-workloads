@@ -2,16 +2,16 @@
 """
 Grazie API Proxy - Translates Anthropic API calls to Grazie API
 Runs locally and adds the proper Grazie-Authenticate-JWT header
+Uses http.server instead of Flask to avoid file descriptor issues
 """
 
-from flask import Flask, request, Response
-import requests
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import json
 import os
-import logging
-
-app = Flask(__name__)
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+import sys
+import urllib.request
+import urllib.error
+import ssl
 
 # Grazie API endpoints
 GRAZIE_ENDPOINTS = {
@@ -24,69 +24,107 @@ def get_grazie_url():
     env = os.environ.get('GRAZIE_ENVIRONMENT', 'PREPROD')
     return GRAZIE_ENDPOINTS.get(env, GRAZIE_ENDPOINTS['PREPROD'])
 
-@app.route('/health', methods=['GET'])
-def health():
-    return {'status': 'healthy', 'service': 'grazie-proxy'}
+class GrazieProxyHandler(BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        print(f"[proxy] {args[0]}", file=sys.stderr)
 
-@app.route('/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])
-def proxy(path):
-    """Proxy all requests to Grazie API with proper authentication"""
+    def do_GET(self):
+        if self.path == '/health':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'status': 'healthy', 'service': 'grazie-proxy'}).encode())
+            return
+        self.proxy_request()
 
-    grazie_token = os.environ.get('GRAZIE_API_TOKEN')
-    if not grazie_token:
-        # Try to get from request header (x-api-key)
-        grazie_token = request.headers.get('x-api-key')
+    def do_POST(self):
+        self.proxy_request()
 
-    if not grazie_token:
-        return {'error': 'No GRAZIE_API_TOKEN or x-api-key provided'}, 401
+    def do_PUT(self):
+        self.proxy_request()
 
-    # Build target URL
-    target_url = f"{get_grazie_url()}/{path}"
-    logger.info(f"Proxying {request.method} to: {target_url}")
+    def do_DELETE(self):
+        self.proxy_request()
 
-    # Copy headers, replacing auth
-    headers = {}
-    for key, value in request.headers:
-        key_lower = key.lower()
-        # Skip hop-by-hop headers and auth headers we'll replace
-        if key_lower in ['host', 'x-api-key', 'authorization', 'content-length']:
-            continue
-        headers[key] = value
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', '*')
+        self.end_headers()
 
-    # Add Grazie authentication
-    headers['Grazie-Authenticate-JWT'] = grazie_token
+    def proxy_request(self):
+        grazie_token = os.environ.get('GRAZIE_API_TOKEN')
+        if not grazie_token:
+            # Try to get from request header
+            grazie_token = self.headers.get('x-api-key')
 
-    # Forward the request
-    try:
-        resp = requests.request(
-            method=request.method,
-            url=target_url,
-            headers=headers,
-            data=request.get_data(),
-            params=request.args,
-            stream=True,
-            timeout=300
-        )
+        if not grazie_token:
+            self.send_error(401, 'No GRAZIE_API_TOKEN or x-api-key provided')
+            return
 
-        # Stream the response back
-        def generate():
-            for chunk in resp.iter_content(chunk_size=1024):
-                yield chunk
+        # Build target URL
+        target_url = f"{get_grazie_url()}{self.path}"
+        print(f"[proxy] {self.command} -> {target_url}", file=sys.stderr)
 
-        # Build response headers
-        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
-        response_headers = [(name, value) for name, value in resp.raw.headers.items()
-                          if name.lower() not in excluded_headers]
+        # Read request body
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length) if content_length > 0 else None
 
-        return Response(generate(), status=resp.status_code, headers=response_headers)
+        # Build headers for upstream request
+        headers = {
+            'Grazie-Authenticate-JWT': grazie_token,
+            'Content-Type': self.headers.get('Content-Type', 'application/json'),
+            'Accept': self.headers.get('Accept', 'application/json'),
+        }
 
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Proxy error: {e}")
-        return {'error': str(e)}, 502
+        # Copy anthropic headers
+        for key in ['anthropic-version', 'anthropic-beta']:
+            if self.headers.get(key):
+                headers[key] = self.headers.get(key)
+
+        try:
+            req = urllib.request.Request(target_url, data=body, headers=headers, method=self.command)
+
+            # Create SSL context
+            ctx = ssl.create_default_context()
+
+            with urllib.request.urlopen(req, context=ctx, timeout=300) as response:
+                # Send response status
+                self.send_response(response.status)
+
+                # Copy response headers
+                for key, value in response.getheaders():
+                    if key.lower() not in ['transfer-encoding', 'connection']:
+                        self.send_header(key, value)
+                self.end_headers()
+
+                # Stream response body
+                while True:
+                    chunk = response.read(4096)
+                    if not chunk:
+                        break
+                    self.wfile.write(chunk)
+
+        except urllib.error.HTTPError as e:
+            print(f"[proxy] HTTP Error: {e.code} - {e.reason}", file=sys.stderr)
+            self.send_response(e.code)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            error_body = e.read() if e.fp else b'{}'
+            self.wfile.write(error_body)
+
+        except Exception as e:
+            print(f"[proxy] Error: {e}", file=sys.stderr)
+            self.send_error(502, str(e))
 
 if __name__ == '__main__':
     port = int(os.environ.get('GRAZIE_PROXY_PORT', 8090))
-    print(f"Starting Grazie API Proxy on port {port}")
-    print(f"Target: {get_grazie_url()}")
-    print(f"Token set: {'yes' if os.environ.get('GRAZIE_API_TOKEN') else 'no'}")
-    app.run(host='127.0.0.1', port=port, debug=False)
+    print(f"Starting Grazie API Proxy on port {port}", file=sys.stderr)
+    print(f"Target: {get_grazie_url()}", file=sys.stderr)
+    print(f"Token set: {'yes' if os.environ.get('GRAZIE_API_TOKEN') else 'no'}", file=sys.stderr)
+
+    server = HTTPServer(('127.0.0.1', port), GrazieProxyHandler)
+    print(f"Proxy ready on http://127.0.0.1:{port}", file=sys.stderr)
+    sys.stderr.flush()
+    server.serve_forever()
