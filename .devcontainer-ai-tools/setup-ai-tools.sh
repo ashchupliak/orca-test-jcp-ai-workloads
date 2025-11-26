@@ -111,10 +111,11 @@ sudo chmod +x /usr/local/bin/codex-jb
 echo "✅ Created helper script: codex-jb"
 
 # Claude Code helper script - write to temp file first, then move with sudo
-# Use the detected command name (claude or claude-code)
+# Use local proxy to translate headers for Grazie API
 cat > /tmp/claude-jb <<'WRAPPER_EOF'
 #!/bin/bash
 # Wrapper for Claude Code with JetBrains AI Platform (Grazie)
+# Uses a local proxy to translate authentication headers
 
 echo "[claude-jb] Starting wrapper..."
 
@@ -128,16 +129,26 @@ if [ -z "$GRAZIE_API_TOKEN" ]; then
     exit 1
 fi
 
-# Determine Grazie base URL
 GRAZIE_ENV="${GRAZIE_ENVIRONMENT:-PREPROD}"
-if [ "$GRAZIE_ENV" = "PRODUCTION" ]; then
-    GRAZIE_BASE_URL="https://api.jetbrains.ai/user/v5/llm/anthropic/v1"
-else
-    GRAZIE_BASE_URL="https://api-preprod.jetbrains.ai/user/v5/llm/anthropic/v1"
-fi
-
 echo "[claude-jb] Environment: $GRAZIE_ENV"
-echo "[claude-jb] Base URL: $GRAZIE_BASE_URL"
+
+# Check if proxy is running, start if not
+PROXY_PORT=8090
+if ! curl -s "http://127.0.0.1:$PROXY_PORT/health" > /dev/null 2>&1; then
+    echo "[claude-jb] Starting Grazie proxy on port $PROXY_PORT..."
+    python3 /workspace/agent-service/grazie_proxy.py &
+    PROXY_PID=$!
+    sleep 2
+
+    # Verify proxy started
+    if ! curl -s "http://127.0.0.1:$PROXY_PORT/health" > /dev/null 2>&1; then
+        echo "ERROR: Failed to start Grazie proxy"
+        exit 1
+    fi
+    echo "[claude-jb] Proxy started (PID: $PROXY_PID)"
+else
+    echo "[claude-jb] Grazie proxy already running"
+fi
 
 # Find the actual claude command
 CLAUDE_BIN=""
@@ -156,16 +167,11 @@ fi
 
 echo "[claude-jb] Using CLI: $CLAUDE_BIN"
 
-# Set environment variables for Claude Code to use Grazie API
-# Claude Code uses ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL
+# Point Claude Code to local proxy instead of direct Grazie API
 export ANTHROPIC_API_KEY="$GRAZIE_API_TOKEN"
-export ANTHROPIC_BASE_URL="$GRAZIE_BASE_URL"
+export ANTHROPIC_BASE_URL="http://127.0.0.1:$PROXY_PORT"
 
-# Set custom headers for Grazie authentication
-# Grazie expects Grazie-Authenticate-JWT header instead of x-api-key
-export ANTHROPIC_CUSTOM_HEADERS="{\"Grazie-Authenticate-JWT\": \"$GRAZIE_API_TOKEN\"}"
-
-echo "[claude-jb] Custom headers set for Grazie authentication"
+echo "[claude-jb] Proxy URL: $ANTHROPIC_BASE_URL"
 echo "[claude-jb] Executing: $CLAUDE_BIN $@"
 
 exec $CLAUDE_BIN "$@"
