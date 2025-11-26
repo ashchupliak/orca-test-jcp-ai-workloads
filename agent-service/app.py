@@ -390,13 +390,201 @@ The Codex CLI agent analyzed your task and generated this response.
         session.completed_at = datetime.utcnow()
 
 
+def run_git_task(session: AgentSession):
+    """Execute task with full Git integration - clone, branch, run agent, commit, push"""
+    try:
+        session.status = 'running'
+        session.add_progress("Starting Git task execution...")
+
+        token = session.config.get('token')
+        environment = session.config.get('environment', 'PREPROD')
+        model = session.config.get('model', 'claude-3-5-sonnet-20241022')
+        git_token = session.config.get('github_token')
+        git_repo_url = session.config.get('github_repo')
+        branch_name = session.config.get('branch_name', 'agent-task')
+
+        base_url = get_grazie_base_url(environment)
+
+        # Set up environment
+        env = os.environ.copy()
+        env['GRAZIE_API_TOKEN'] = token
+        env['GRAZIE_ENVIRONMENT'] = environment
+        env['ANTHROPIC_API_KEY'] = 'use-grazie-token'
+        env['ANTHROPIC_BASE_URL'] = f"{base_url}/anthropic/v1"
+        env['GITHUB_TOKEN'] = git_token
+
+        # Create workspace directory
+        workspace = Path('/workspace/agent-workspace')
+        workspace.mkdir(parents=True, exist_ok=True)
+
+        # Clone repository
+        session.add_progress(f"Cloning repository: {git_repo_url}")
+        repo_name = git_repo_url.split('/')[-1].replace('.git', '')
+        repo_path = workspace / repo_name
+
+        # Build authenticated clone URL
+        clone_url = git_repo_url
+        if git_token and 'github.com' in git_repo_url:
+            clone_url = git_repo_url.replace('https://', f'https://{git_token}@')
+
+        if repo_path.exists():
+            session.add_progress("Repository exists, fetching latest...")
+            subprocess.run(['git', 'fetch', '--all'], cwd=repo_path, env=env, capture_output=True)
+            subprocess.run(['git', 'checkout', 'main'], cwd=repo_path, env=env, capture_output=True)
+            subprocess.run(['git', 'pull'], cwd=repo_path, env=env, capture_output=True)
+        else:
+            result = subprocess.run(['git', 'clone', clone_url], cwd=workspace, env=env, capture_output=True, text=True)
+            if result.returncode != 0:
+                session.add_progress(f"Clone failed: {result.stderr}")
+                raise Exception(f"Failed to clone repository: {result.stderr}")
+            session.add_progress("Repository cloned successfully")
+
+        # Create and checkout branch
+        session.add_progress(f"Creating branch: {branch_name}")
+        subprocess.run(['git', 'checkout', '-B', branch_name], cwd=repo_path, env=env, capture_output=True)
+        session.add_progress(f"Switched to branch: {branch_name}")
+
+        # Configure git user for commits
+        subprocess.run(['git', 'config', 'user.email', 'agent@orca-lab.local'], cwd=repo_path, env=env, capture_output=True)
+        subprocess.run(['git', 'config', 'user.name', 'Orca Lab Agent'], cwd=repo_path, env=env, capture_output=True)
+
+        session.add_progress(f"Using model: {model}")
+        session.add_progress(f"Working directory: {repo_path}")
+        session.add_progress(f"Executing task: {session.task}")
+
+        # Check if claude-code is available
+        claude_cmd = None
+        for cmd in ['claude-code', 'claude', 'claude-jb']:
+            check = subprocess.run(['which', cmd], capture_output=True, text=True)
+            if check.returncode == 0:
+                claude_cmd = cmd
+                break
+
+        if not claude_cmd:
+            # Claude Code not installed, simulate execution
+            session.add_progress("Claude Code CLI not found - running in simulation mode")
+            session.add_progress("Simulating agent execution...")
+
+            import time
+            time.sleep(2)
+
+            session.add_progress("Agent analyzed the task")
+            session.add_progress("Generated solution")
+
+            # Create a sample output file
+            sample_file = repo_path / 'agent_output.md'
+            sample_file.write_text(f"""# Agent Output
+
+## Task
+{session.task}
+
+## Analysis
+The Claude Code agent analyzed your task and generated this response.
+
+## Notes
+- This is a simulation because Claude Code CLI is not installed
+- To use the real agent, install claude-code in the container
+- Model requested: {model}
+- Environment: {environment}
+- Branch: {branch_name}
+""")
+
+            session.files.append({
+                'path': str(sample_file),
+                'type': 'created',
+                'content': sample_file.read_text()
+            })
+
+            session.output = "Task completed in simulation mode"
+        else:
+            # Run Claude Code
+            session.add_progress(f"Running {claude_cmd}...")
+
+            cmd = [claude_cmd, '--print', session.task]
+
+            process = subprocess.Popen(
+                cmd,
+                cwd=repo_path,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True
+            )
+
+            session.process = process
+
+            output_lines = []
+            for line in process.stdout:
+                output_lines.append(line)
+                session.add_progress(line.strip())
+
+            process.wait()
+
+            session.output = ''.join(output_lines)
+
+            if process.returncode != 0:
+                session.add_progress(f"Agent exited with code {process.returncode}")
+
+        # Check for changes and commit
+        session.add_progress("Checking for changes...")
+        status = subprocess.run(['git', 'status', '--porcelain'], cwd=repo_path, env=env, capture_output=True, text=True)
+
+        if status.stdout.strip():
+            session.add_progress("Changes detected, committing...")
+
+            # Add all changes
+            subprocess.run(['git', 'add', '.'], cwd=repo_path, env=env, capture_output=True)
+
+            # Commit
+            commit_msg = f"Agent task: {session.task[:50]}..."
+            commit_result = subprocess.run(
+                ['git', 'commit', '-m', commit_msg],
+                cwd=repo_path, env=env, capture_output=True, text=True
+            )
+
+            if commit_result.returncode == 0:
+                session.add_progress("Changes committed")
+
+                # Push to remote
+                session.add_progress(f"Pushing to branch: {branch_name}")
+                push_result = subprocess.run(
+                    ['git', 'push', '-u', 'origin', branch_name, '--force'],
+                    cwd=repo_path, env=env, capture_output=True, text=True
+                )
+
+                if push_result.returncode == 0:
+                    session.add_progress(f"Successfully pushed to {branch_name}")
+
+                    # Extract the PR URL hint
+                    pr_url = f"{git_repo_url.replace('.git', '')}/compare/{branch_name}?expand=1"
+                    session.add_progress(f"Create PR: {pr_url}")
+                else:
+                    session.add_progress(f"Push failed: {push_result.stderr}")
+            else:
+                session.add_progress(f"Commit failed: {commit_result.stderr}")
+        else:
+            session.add_progress("No changes to commit")
+
+        session.status = 'completed'
+        session.add_progress("Git task completed successfully")
+
+    except Exception as e:
+        session.status = 'error'
+        session.error = str(e)
+        session.add_progress(f"Error: {str(e)}")
+        logger.error(f"Git task error: {traceback.format_exc()}")
+    finally:
+        session.completed_at = datetime.utcnow()
+
+
 @app.route('/')
 def index():
     return jsonify({
         'service': 'agent-service',
-        'version': '1.0.0',
+        'version': '1.1.0',
         'status': 'running',
         'endpoints': {
+            '/api/agent/git-task': 'POST - Execute task with Git integration (clone, branch, commit, push)',
             '/api/agent/execute': 'POST - Execute agent task',
             '/api/agent/status/<session_id>': 'GET - Get session status',
             '/api/agent/stop/<session_id>': 'POST - Stop agent session',
@@ -420,6 +608,73 @@ def health():
         'port': 8001,
         'active_sessions': len(sessions)
     })
+
+
+@app.route('/api/agent/git-task', methods=['POST'])
+def git_task():
+    """Start agent task with Git integration - clones repo, creates branch, runs task, commits and pushes.
+
+    This endpoint is called by the orca-lab Agent tab to execute tasks on a Git repository.
+    """
+    try:
+        data = request.get_json()
+
+        token = data.get('token')
+        environment = data.get('environment', 'PREPROD')
+        model = data.get('model', 'claude-3-5-sonnet-20241022')
+        task = data.get('task')
+        git_repo_url = data.get('git_repo_url')
+        git_token = data.get('git_token')
+        branch_name = data.get('branch_name')
+
+        logger.info(f"=== GIT-TASK REQUEST ===")
+        logger.info(f"Environment: {environment}")
+        logger.info(f"Model: {model}")
+        logger.info(f"Task: {task[:100] if task else 'None'}...")
+        logger.info(f"Git Repo: {git_repo_url or 'Not configured'}")
+        logger.info(f"Branch: {branch_name or 'Not specified'}")
+
+        if not token:
+            return jsonify({'error': 'Token is required'}), 400
+
+        if not task:
+            return jsonify({'error': 'Task is required'}), 400
+
+        if not git_repo_url:
+            return jsonify({'error': 'Git repository URL is required'}), 400
+
+        if not git_token:
+            return jsonify({'error': 'Git token is required'}), 400
+
+        # Create session with git configuration
+        session_id = str(uuid.uuid4())
+        config = {
+            'token': token,
+            'environment': environment,
+            'model': model,
+            'github_token': git_token,
+            'github_repo': git_repo_url,
+            'branch_name': branch_name or 'agent-task'
+        }
+
+        session = AgentSession(session_id, 'claude', task, config)
+        sessions[session_id] = session
+
+        # Start git task in background thread
+        thread = threading.Thread(target=run_git_task, args=(session,))
+        thread.daemon = True
+        thread.start()
+
+        return jsonify({
+            'session_id': session_id,
+            'agent': 'claude',
+            'status': 'started',
+            'message': 'Git task started - cloning repo and executing agent'
+        })
+
+    except Exception as e:
+        logger.error(f"Git task error: {traceback.format_exc()}")
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/agent/execute', methods=['POST'])
