@@ -131,57 +131,15 @@ def run_claude_code(session: AgentSession):
         session.add_progress(f"Executing task: {session.task}")
 
         # Check if claude-code is available
-        claude_check = subprocess.run(['which', 'claude-code'], capture_output=True, text=True)
+        claude_cmd = None
+        for cmd in ['claude-code', 'claude', 'claude-jb']:
+            check = subprocess.run(['which', cmd], capture_output=True, text=True)
+            if check.returncode == 0:
+                claude_cmd = cmd
+                break
 
-        if claude_check.returncode != 0:
-            # Try alternative command names
-            for cmd in ['claude', 'claude-jb']:
-                check = subprocess.run(['which', cmd], capture_output=True, text=True)
-                if check.returncode == 0:
-                    claude_cmd = cmd
-                    break
-            else:
-                # Claude Code not installed, simulate execution
-                session.add_progress("Claude Code CLI not found - running in simulation mode")
-                session.add_progress("Simulating agent execution...")
-
-                # Simulate some work
-                import time
-                time.sleep(2)
-
-                session.add_progress("Agent analyzed the task")
-                session.add_progress("Generated solution")
-
-                # Create a sample output file
-                sample_file = workspace / 'agent_output.md'
-                sample_file.write_text(f"""# Agent Output
-
-## Task
-{session.task}
-
-## Analysis
-The Claude Code agent analyzed your task and generated this response.
-
-## Notes
-- This is a simulation because Claude Code CLI is not installed
-- To use the real agent, install claude-code in the container
-- Model requested: {model}
-- Environment: {environment}
-""")
-
-                session.files.append({
-                    'path': str(sample_file),
-                    'type': 'created',
-                    'content': sample_file.read_text()
-                })
-
-                session.output = "Task completed in simulation mode"
-                session.status = 'completed'
-                session.completed_at = datetime.utcnow()
-                session.add_progress("Task completed successfully (simulation)")
-                return
-        else:
-            claude_cmd = 'claude-code'
+        if not claude_cmd:
+            raise Exception("Claude Code CLI not found. Please ensure 'claude', 'claude-code', or 'claude-jb' is installed in the container.")
 
         # Run Claude Code
         session.add_progress(f"Running {claude_cmd}...")
@@ -309,53 +267,15 @@ def run_codex_cli(session: AgentSession):
         session.add_progress(f"Executing task: {session.task}")
 
         # Check if codex is available
-        codex_check = subprocess.run(['which', 'codex'], capture_output=True, text=True)
+        codex_cmd = None
+        for cmd in ['codex', 'codex-jb']:
+            check = subprocess.run(['which', cmd], capture_output=True, text=True)
+            if check.returncode == 0:
+                codex_cmd = cmd
+                break
 
-        if codex_check.returncode != 0:
-            # Try alternative
-            codex_jb_check = subprocess.run(['which', 'codex-jb'], capture_output=True, text=True)
-            if codex_jb_check.returncode != 0:
-                # Codex not installed, simulate execution
-                session.add_progress("Codex CLI not found - running in simulation mode")
-                session.add_progress("Simulating agent execution...")
-
-                import time
-                time.sleep(2)
-
-                session.add_progress("Agent analyzed the task")
-                session.add_progress("Generated solution")
-
-                # Create a sample output file
-                sample_file = workspace / 'codex_output.md'
-                sample_file.write_text(f"""# Codex CLI Output
-
-## Task
-{session.task}
-
-## Analysis
-The Codex CLI agent analyzed your task and generated this response.
-
-## Notes
-- This is a simulation because Codex CLI is not installed
-- To use the real agent, install codex in the container
-- Environment: {environment}
-""")
-
-                session.files.append({
-                    'path': str(sample_file),
-                    'type': 'created',
-                    'content': sample_file.read_text()
-                })
-
-                session.output = "Task completed in simulation mode"
-                session.status = 'completed'
-                session.completed_at = datetime.utcnow()
-                session.add_progress("Task completed successfully (simulation)")
-                return
-            else:
-                codex_cmd = 'codex-jb'
-        else:
-            codex_cmd = 'codex'
+        if not codex_cmd:
+            raise Exception("Codex CLI not found. Please ensure 'codex' or 'codex-jb' is installed in the container.")
 
         # Run Codex
         session.add_progress(f"Running {codex_cmd}...")
@@ -493,99 +413,64 @@ def run_git_task(session: AgentSession):
                 break
 
         if not claude_cmd:
-            # Claude Code not installed, simulate execution
-            session.add_progress("Claude Code CLI not found - running in simulation mode")
-            session.add_progress("Simulating agent execution...")
+            raise Exception("Claude Code CLI not found. Please ensure 'claude', 'claude-code', or 'claude-jb' is installed in the container.")
 
-            import time
-            time.sleep(2)
+        # Run Claude Code
+        session.add_progress(f"Running {claude_cmd}...")
 
-            session.add_progress("Agent analyzed the task")
-            session.add_progress("Generated solution")
+        # Claude Code CLI flags:
+        # -p/--prompt: the task to execute
+        # --yes: auto-accept all prompts (non-interactive)
+        # --dangerously-skip-permissions: skip permission prompts for full automation
+        cmd = [
+            claude_cmd,
+            '-p', session.task,
+            '--yes',
+            '--dangerously-skip-permissions'
+        ]
 
-            # Create a sample output file
-            sample_file = repo_path / 'agent_output.md'
-            sample_file.write_text(f"""# Agent Output
+        session.add_progress(f"Command: {' '.join(cmd)}")
 
-## Task
-{session.task}
+        process = subprocess.Popen(
+            cmd,
+            cwd=repo_path,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            stdin=subprocess.DEVNULL,  # Close stdin to prevent hanging
+            text=True
+        )
 
-## Analysis
-The Claude Code agent analyzed your task and generated this response.
+        session.process = process
 
-## Notes
-- This is a simulation because Claude Code CLI is not installed
-- To use the real agent, install claude-code in the container
-- Model requested: {model}
-- Environment: {environment}
-- Branch: {branch_name}
-""")
+        output_lines = []
+        try:
+            # Read output with timeout handling
+            while True:
+                # Check if process has finished
+                retcode = process.poll()
+                if retcode is not None:
+                    # Process finished, read remaining output
+                    remaining = process.stdout.read()
+                    if remaining:
+                        for line in remaining.split('\n'):
+                            if line.strip():
+                                output_lines.append(line + '\n')
+                                session.add_progress(line.strip())
+                    break
 
-            session.files.append({
-                'path': str(sample_file),
-                'type': 'created',
-                'content': sample_file.read_text()
-            })
+                # Read available output
+                line = process.stdout.readline()
+                if line:
+                    output_lines.append(line)
+                    session.add_progress(line.strip())
+        except Exception as e:
+            session.add_progress(f"Error reading output: {e}")
 
-            session.output = "Task completed in simulation mode"
-        else:
-            # Run Claude Code
-            session.add_progress(f"Running {claude_cmd}...")
+        session.output = ''.join(output_lines)
 
-            # Claude Code CLI flags:
-            # -p/--prompt: the task to execute
-            # --yes: auto-accept all prompts (non-interactive)
-            # --dangerously-skip-permissions: skip permission prompts for full automation
-            cmd = [
-                claude_cmd,
-                '-p', session.task,
-                '--yes',
-                '--dangerously-skip-permissions'
-            ]
-
-            session.add_progress(f"Command: {' '.join(cmd)}")
-
-            process = subprocess.Popen(
-                cmd,
-                cwd=repo_path,
-                env=env,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                stdin=subprocess.DEVNULL,  # Close stdin to prevent hanging
-                text=True
-            )
-
-            session.process = process
-
-            output_lines = []
-            try:
-                # Read output with timeout handling
-                import select
-                while True:
-                    # Check if process has finished
-                    retcode = process.poll()
-                    if retcode is not None:
-                        # Process finished, read remaining output
-                        remaining = process.stdout.read()
-                        if remaining:
-                            for line in remaining.split('\n'):
-                                if line.strip():
-                                    output_lines.append(line + '\n')
-                                    session.add_progress(line.strip())
-                        break
-
-                    # Read available output
-                    line = process.stdout.readline()
-                    if line:
-                        output_lines.append(line)
-                        session.add_progress(line.strip())
-            except Exception as e:
-                session.add_progress(f"Error reading output: {e}")
-
-            session.output = ''.join(output_lines)
-
-            if process.returncode != 0:
-                session.add_progress(f"Agent exited with code {process.returncode}")
+        if process.returncode != 0:
+            session.add_progress(f"Agent exited with code {process.returncode}")
 
         # Check for changes and commit
         session.add_progress("Checking for changes...")
