@@ -38,7 +38,9 @@ else
         echo "  Check logs: tail -f /tmp/chat-service.log"
     else
         echo "✗ Chat service failed to start"
-        echo "  Check logs: cat /tmp/chat-service.log"
+        echo "  === Chat service error log ==="
+        cat /tmp/chat-service.log 2>/dev/null || echo "No log file"
+        echo "  === End of chat service log ==="
     fi
 fi
 
@@ -66,7 +68,9 @@ else
         echo "  Check logs: tail -f /tmp/agent-service.log"
     else
         echo "✗ Agent service failed to start"
-        echo "  Check logs: cat /tmp/agent-service.log"
+        echo "  === Agent service error log ==="
+        cat /tmp/agent-service.log 2>/dev/null || echo "No log file"
+        echo "  === End of agent service log ==="
     fi
 fi
 
