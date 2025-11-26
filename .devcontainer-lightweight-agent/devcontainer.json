@@ -6,9 +6,9 @@
 
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
-    "WORKSPACE_ROOT": "/workspace"
+    "WORKSPACE_ROOT": "/workspace",
+    "CONTAINER_NAME": "lightweight-agent"
   },
 
-  "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
   "forwardPorts": [8000, 8001, 35697]
 }
