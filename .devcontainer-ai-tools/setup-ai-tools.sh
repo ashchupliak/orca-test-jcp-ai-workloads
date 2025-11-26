@@ -136,16 +136,26 @@ echo "[claude-jb] Environment: $GRAZIE_ENV"
 PROXY_PORT=8090
 if ! curl -s "http://127.0.0.1:$PROXY_PORT/health" > /dev/null 2>&1; then
     echo "[claude-jb] Starting Grazie proxy on port $PROXY_PORT..."
-    python3 /workspace/agent-service/grazie_proxy.py &
+    # Use nohup and redirect all file descriptors to avoid "Bad file descriptor" error
+    nohup python3 /workspace/agent-service/grazie_proxy.py > /tmp/grazie_proxy.log 2>&1 &
     PROXY_PID=$!
-    sleep 2
+    disown $PROXY_PID 2>/dev/null || true
 
-    # Verify proxy started
-    if ! curl -s "http://127.0.0.1:$PROXY_PORT/health" > /dev/null 2>&1; then
-        echo "ERROR: Failed to start Grazie proxy"
-        exit 1
-    fi
-    echo "[claude-jb] Proxy started (PID: $PROXY_PID)"
+    # Wait for proxy to start (check up to 5 seconds)
+    for i in 1 2 3 4 5; do
+        sleep 1
+        if curl -s "http://127.0.0.1:$PROXY_PORT/health" > /dev/null 2>&1; then
+            echo "[claude-jb] Proxy started (PID: $PROXY_PID)"
+            break
+        fi
+        if [ $i -eq 5 ]; then
+            echo "ERROR: Failed to start Grazie proxy"
+            echo "Proxy log:"
+            cat /tmp/grazie_proxy.log 2>/dev/null || echo "(no log)"
+            exit 1
+        fi
+        echo "[claude-jb] Waiting for proxy... ($i/5)"
+    done
 else
     echo "[claude-jb] Grazie proxy already running"
 fi
