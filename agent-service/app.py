@@ -186,8 +186,15 @@ The Claude Code agent analyzed your task and generated this response.
         # Run Claude Code
         session.add_progress(f"Running {claude_cmd}...")
 
-        # Build command
-        cmd = [claude_cmd, '--print', session.task]
+        # Claude Code CLI flags for non-interactive execution
+        cmd = [
+            claude_cmd,
+            '-p', session.task,
+            '--yes',
+            '--dangerously-skip-permissions'
+        ]
+
+        session.add_progress(f"Command: {' '.join(cmd)}")
 
         process = subprocess.Popen(
             cmd,
@@ -195,17 +202,31 @@ The Claude Code agent analyzed your task and generated this response.
             env=env,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            stdin=subprocess.DEVNULL,  # Close stdin to prevent hanging
             text=True
         )
 
         session.process = process
 
         output_lines = []
-        for line in process.stdout:
-            output_lines.append(line)
-            session.add_progress(line.strip())
+        try:
+            while True:
+                retcode = process.poll()
+                if retcode is not None:
+                    remaining = process.stdout.read()
+                    if remaining:
+                        for line in remaining.split('\n'):
+                            if line.strip():
+                                output_lines.append(line + '\n')
+                                session.add_progress(line.strip())
+                    break
 
-        process.wait()
+                line = process.stdout.readline()
+                if line:
+                    output_lines.append(line)
+                    session.add_progress(line.strip())
+        except Exception as e:
+            session.add_progress(f"Error reading output: {e}")
 
         session.output = ''.join(output_lines)
 
@@ -511,7 +532,18 @@ The Claude Code agent analyzed your task and generated this response.
             # Run Claude Code
             session.add_progress(f"Running {claude_cmd}...")
 
-            cmd = [claude_cmd, '--print', session.task]
+            # Claude Code CLI flags:
+            # -p/--prompt: the task to execute
+            # --yes: auto-accept all prompts (non-interactive)
+            # --dangerously-skip-permissions: skip permission prompts for full automation
+            cmd = [
+                claude_cmd,
+                '-p', session.task,
+                '--yes',
+                '--dangerously-skip-permissions'
+            ]
+
+            session.add_progress(f"Command: {' '.join(cmd)}")
 
             process = subprocess.Popen(
                 cmd,
@@ -519,17 +551,36 @@ The Claude Code agent analyzed your task and generated this response.
                 env=env,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,  # Close stdin to prevent hanging
                 text=True
             )
 
             session.process = process
 
             output_lines = []
-            for line in process.stdout:
-                output_lines.append(line)
-                session.add_progress(line.strip())
+            try:
+                # Read output with timeout handling
+                import select
+                while True:
+                    # Check if process has finished
+                    retcode = process.poll()
+                    if retcode is not None:
+                        # Process finished, read remaining output
+                        remaining = process.stdout.read()
+                        if remaining:
+                            for line in remaining.split('\n'):
+                                if line.strip():
+                                    output_lines.append(line + '\n')
+                                    session.add_progress(line.strip())
+                        break
 
-            process.wait()
+                    # Read available output
+                    line = process.stdout.readline()
+                    if line:
+                        output_lines.append(line)
+                        session.add_progress(line.strip())
+            except Exception as e:
+                session.add_progress(f"Error reading output: {e}")
 
             session.output = ''.join(output_lines)
 
