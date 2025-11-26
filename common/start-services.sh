@@ -4,9 +4,46 @@
 
 set -e
 
+# Lock file to prevent multiple instances
+LOCK_FILE="/tmp/start-services.lock"
+if [ -f "$LOCK_FILE" ]; then
+    LOCK_PID=$(cat "$LOCK_FILE" 2>/dev/null)
+    if [ -n "$LOCK_PID" ] && kill -0 "$LOCK_PID" 2>/dev/null; then
+        echo "Another instance is already running (PID: $LOCK_PID), exiting..."
+        exit 0
+    fi
+fi
+echo $$ > "$LOCK_FILE"
+trap "rm -f $LOCK_FILE" EXIT
+
 echo "=== Orca Container Services Startup ==="
 echo "Container: ${CONTAINER_NAME:-unknown}"
 echo "Starting at: $(date)"
+
+# Function to check if service is healthy
+is_healthy() {
+    local port=$1
+    curl -s -f "http://localhost:$port/health" > /dev/null 2>&1
+}
+
+# Function to kill process on a specific port
+kill_port() {
+    local port=$1
+    echo "  Killing any process on port $port..."
+    # Use fuser if available, otherwise try lsof
+    if command -v fuser &> /dev/null; then
+        fuser -k $port/tcp 2>/dev/null || true
+    else
+        # Fallback to lsof
+        local pid=$(lsof -ti:$port 2>/dev/null || true)
+        if [ -n "$pid" ]; then
+            echo "  Found PID $pid on port $port, killing..."
+            kill -9 $pid 2>/dev/null || true
+        fi
+    fi
+    # Give it a moment to release the port
+    sleep 1
+}
 
 # Function to wait for a service to be healthy
 wait_for_health() {
@@ -17,7 +54,7 @@ wait_for_health() {
 
     echo "Waiting for $name (port $port) to be healthy..."
     while [ $attempt -le $max_attempts ]; do
-        if curl -s -f "http://localhost:$port/health" > /dev/null 2>&1; then
+        if is_healthy "$port"; then
             echo "✓ $name is healthy (attempt $attempt)"
             return 0
         fi
@@ -37,6 +74,12 @@ start_service() {
     local port=$3
     local log_file="/tmp/${service_name}.log"
 
+    # Check if already healthy - don't restart if working
+    if is_healthy "$port"; then
+        echo "✓ $service_name already healthy on port $port, skipping restart"
+        return 0
+    fi
+
     if [ ! -d "$service_dir" ]; then
         echo "ERROR: $service_name not found at $service_dir"
         return 1
@@ -48,8 +91,8 @@ start_service() {
 
     echo "Starting $service_name on port $port..."
 
-    # Kill any existing process on this port
-    pkill -f "python3.*app.py.*$port" 2>/dev/null || true
+    # Kill any existing process on this port using proper port-based killing
+    kill_port "$port"
 
     # Start the service
     nohup python3 app.py > "$log_file" 2>&1 &
