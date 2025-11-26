@@ -4,4 +4,5 @@ FROM mcr.microsoft.com/devcontainers/python:3.11
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
 # Pre-install Python dependencies
-RUN pip install --no-cache-dir anthropic fastapi 'uvicorn[standard]' websockets
+# Note: flask and requests are required for chat-service and agent-service
+RUN pip install --no-cache-dir anthropic fastapi 'uvicorn[standard]' websockets flask requests
