@@ -112,10 +112,13 @@ echo "✅ Created helper script: codex-jb"
 
 # Claude Code helper script - write to temp file first, then move with sudo
 # Use the detected command name (claude or claude-code)
-cat > /tmp/claude-jb <<EOF
+cat > /tmp/claude-jb <<'WRAPPER_EOF'
 #!/bin/bash
-# Wrapper for Claude Code with JetBrains AI Platform
-if [ -z "\$GRAZIE_API_TOKEN" ]; then
+# Wrapper for Claude Code with JetBrains AI Platform (Grazie)
+
+echo "[claude-jb] Starting wrapper..."
+
+if [ -z "$GRAZIE_API_TOKEN" ]; then
     echo "ERROR: GRAZIE_API_TOKEN environment variable not set"
     echo "Get your token from: https://platform.jetbrains.ai/"
     echo ""
@@ -125,31 +128,48 @@ if [ -z "\$GRAZIE_API_TOKEN" ]; then
     exit 1
 fi
 
+# Determine Grazie base URL
+GRAZIE_ENV="${GRAZIE_ENVIRONMENT:-PREPROD}"
+if [ "$GRAZIE_ENV" = "PRODUCTION" ]; then
+    GRAZIE_BASE_URL="https://api.jetbrains.ai/user/v5/llm/anthropic/v1"
+else
+    GRAZIE_BASE_URL="https://api-preprod.jetbrains.ai/user/v5/llm/anthropic/v1"
+fi
+
+echo "[claude-jb] Environment: $GRAZIE_ENV"
+echo "[claude-jb] Base URL: $GRAZIE_BASE_URL"
+
 # Find the actual claude command
 CLAUDE_BIN=""
 for cmd in claude claude-code; do
-    if command -v \$cmd &> /dev/null; then
-        CLAUDE_BIN=\$cmd
+    if command -v $cmd &> /dev/null; then
+        CLAUDE_BIN=$(command -v $cmd)
         break
     fi
 done
 
-if [ -z "\$CLAUDE_BIN" ]; then
+if [ -z "$CLAUDE_BIN" ]; then
     echo "ERROR: Claude Code CLI not found"
     echo "Install with: npm install -g @anthropic-ai/claude-code"
     exit 1
 fi
 
-# Update config with current token
-if command -v jq &> /dev/null && [ -f ~/.config/claude-code/config.json ]; then
-    jq --arg token "\$GRAZIE_API_TOKEN" \
-       '.customHeaders["Grazie-Authenticate-JWT"] = \$token' \
-       ~/.config/claude-code/config.json > ~/.config/claude-code/config.json.tmp \
-       && mv ~/.config/claude-code/config.json.tmp ~/.config/claude-code/config.json
-fi
+echo "[claude-jb] Using CLI: $CLAUDE_BIN"
 
-exec \$CLAUDE_BIN "\$@"
-EOF
+# Set environment variables for Claude Code to use Grazie API
+# Claude Code uses ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL
+export ANTHROPIC_API_KEY="$GRAZIE_API_TOKEN"
+export ANTHROPIC_BASE_URL="$GRAZIE_BASE_URL"
+
+# Set custom headers for Grazie authentication
+# Grazie expects Grazie-Authenticate-JWT header instead of x-api-key
+export ANTHROPIC_CUSTOM_HEADERS="{\"Grazie-Authenticate-JWT\": \"$GRAZIE_API_TOKEN\"}"
+
+echo "[claude-jb] Custom headers set for Grazie authentication"
+echo "[claude-jb] Executing: $CLAUDE_BIN $@"
+
+exec $CLAUDE_BIN "$@"
+WRAPPER_EOF
 sudo mv /tmp/claude-jb /usr/local/bin/claude-jb
 sudo chmod +x /usr/local/bin/claude-jb
 
