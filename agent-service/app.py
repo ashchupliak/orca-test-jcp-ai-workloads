@@ -130,9 +130,9 @@ def run_claude_code(session: AgentSession):
         session.add_progress(f"Working directory: {workspace}")
         session.add_progress(f"Executing task: {session.task}")
 
-        # Check if claude-code is available
+        # Check if claude-code is available (prefer claude-jb which has Grazie auth)
         claude_cmd = None
-        for cmd in ['claude-code', 'claude', 'claude-jb']:
+        for cmd in ['claude-jb', 'claude-code', 'claude']:
             check = subprocess.run(['which', cmd], capture_output=True, text=True)
             if check.returncode == 0:
                 claude_cmd = cmd
@@ -144,15 +144,15 @@ def run_claude_code(session: AgentSession):
         # Run Claude Code
         session.add_progress(f"Running {claude_cmd}...")
 
-        # Claude Code CLI flags for non-interactive execution
+        # Claude Code CLI: prompt is positional arg, use --print for non-interactive mode
         cmd = [
             claude_cmd,
-            '-p', session.task,
-            '--yes',
-            '--dangerously-skip-permissions'
+            '--print',
+            '--dangerously-skip-permissions',
+            session.task
         ]
 
-        session.add_progress(f"Command: {' '.join(cmd)}")
+        session.add_progress(f"Command: {claude_cmd} --print --dangerously-skip-permissions '<task>'")
 
         process = subprocess.Popen(
             cmd,
@@ -404,9 +404,9 @@ def run_git_task(session: AgentSession):
         session.add_progress(f"Working directory: {repo_path}")
         session.add_progress(f"Executing task: {session.task}")
 
-        # Check if claude-code is available
+        # Check if claude-code is available (prefer claude-jb which has Grazie auth)
         claude_cmd = None
-        for cmd in ['claude-code', 'claude', 'claude-jb']:
+        for cmd in ['claude-jb', 'claude-code', 'claude']:
             check = subprocess.run(['which', cmd], capture_output=True, text=True)
             if check.returncode == 0:
                 claude_cmd = cmd
@@ -418,18 +418,16 @@ def run_git_task(session: AgentSession):
         # Run Claude Code
         session.add_progress(f"Running {claude_cmd}...")
 
-        # Claude Code CLI flags:
-        # -p/--prompt: the task to execute
-        # --yes: auto-accept all prompts (non-interactive)
-        # --dangerously-skip-permissions: skip permission prompts for full automation
+        # Claude Code CLI: prompt is positional arg, use --print for non-interactive mode
+        # --dangerously-skip-permissions skips permission prompts for automation
         cmd = [
             claude_cmd,
-            '-p', session.task,
-            '--yes',
-            '--dangerously-skip-permissions'
+            '--print',
+            '--dangerously-skip-permissions',
+            session.task
         ]
 
-        session.add_progress(f"Command: {' '.join(cmd)}")
+        session.add_progress(f"Command: {claude_cmd} --print --dangerously-skip-permissions '<task>'")
 
         process = subprocess.Popen(
             cmd,
@@ -469,8 +467,10 @@ def run_git_task(session: AgentSession):
 
         session.output = ''.join(output_lines)
 
+        # Check if Claude failed
         if process.returncode != 0:
             session.add_progress(f"Agent exited with code {process.returncode}")
+            raise Exception(f"Claude Code failed with exit code {process.returncode}")
 
         # Check for changes and commit
         session.add_progress("Checking for changes...")
