@@ -1,0 +1,48 @@
+{
+  "name": "IDE Test Environment",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "installOhMyZsh": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+
+  "containerEnv": {
+    "IDE_EXTENSIONS": "vscodevim.vim,eamodio.gitlens,esbenp.prettier-vscode",
+    "IDE_PORT": "8080",
+    "CODE_SERVER_VERSION": "4.96.2",
+    "WORKSPACE": "/workspaces/orca-test-jcp-ai-workloads"
+  },
+
+  "postCreateCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/ide/setup-ide.sh",
+  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/ide/start-ide.sh &",
+
+  "forwardPorts": [8000, 8001, 8080],
+
+  "portsAttributes": {
+    "8080": {
+      "label": "VS Code IDE",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.formatOnSave": true,
+        "files.autoSave": "afterDelay"
+      }
+    }
+  },
+
+  "remoteUser": "vscode"
+}

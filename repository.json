@@ -1,0 +1,49 @@
+{
+  "name": "orca-test-jcp-ai-workloads",
+  "description": "Test workloads for JCP Orca platform",
+  "version": "1.0.0",
+  "exposedPorts": [8000, 8001, 8080],
+  "environments": {
+    "python": {
+      "name": "Python Development",
+      "description": "Python environment with FastAPI and common libraries",
+      "devcontainer": ".devcontainer-python",
+      "icon": "🐍",
+      "category": "Development"
+    },
+    "javascript": {
+      "name": "JavaScript/Node.js",
+      "description": "Node.js environment with Express and modern tools",
+      "devcontainer": ".devcontainer-javascript",
+      "icon": "📦",
+      "category": "Development"
+    },
+    "go": {
+      "name": "Go Development",
+      "description": "Go environment with standard tooling",
+      "devcontainer": ".devcontainer-go",
+      "icon": "🐹",
+      "category": "Development"
+    },
+    "java": {
+      "name": "Java Development",
+      "description": "Java environment with Spring Boot",
+      "devcontainer": ".devcontainer-java",
+      "icon": "☕",
+      "category": "Development"
+    },
+    "ide-test": {
+      "name": "IDE Test Environment",
+      "description": "Simple environment for testing IDE integration",
+      "devcontainer": ".devcontainer-ide-test",
+      "icon": "💻",
+      "category": "Testing",
+      "features": [
+        "VS Code IDE on port 8080",
+        "Node.js 20",
+        "Git with Oh My Zsh",
+        "Fast startup for quick testing"
+      ]
+    }
+  }
+}
