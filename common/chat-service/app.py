@@ -5,6 +5,7 @@ Provides web-based AI chat through JetBrains AI Platform (Grazie)
 """
 
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from datetime import datetime
 import uuid
 import os
@@ -12,6 +13,9 @@ import platform
 import requests
 
 app = Flask(__name__)
+
+# Enable CORS for all routes - required for orca-lab proxy access
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # Store conversation history (in-memory for simplicity)
 conversations = {}
