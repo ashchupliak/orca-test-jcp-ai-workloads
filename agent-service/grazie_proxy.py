@@ -14,9 +14,10 @@ import urllib.error
 import ssl
 
 # Grazie API endpoints (without /v1 - Claude Code adds it)
+# Based on: https://api.stgn.jetbrains.ai/user/v5/llm/anthropic/v1/messages
 GRAZIE_ENDPOINTS = {
-    'STAGING': 'https://api-preprod.jetbrains.ai/user/v5/llm/anthropic',
-    'PREPROD': 'https://api-preprod.jetbrains.ai/user/v5/llm/anthropic',
+    'STAGING': 'https://api.stgn.jetbrains.ai/user/v5/llm/anthropic',
+    'PREPROD': 'https://api.stgn.jetbrains.ai/user/v5/llm/anthropic',
     'PRODUCTION': 'https://api.jetbrains.ai/user/v5/llm/anthropic',
 }
 
@@ -79,9 +80,10 @@ class GrazieProxyHandler(BaseHTTPRequestHandler):
             'Grazie-Authenticate-JWT': grazie_token,
             'Content-Type': self.headers.get('Content-Type', 'application/json'),
             'Accept': self.headers.get('Accept', 'application/json'),
+            'anthropic-version': '2023-06-01',  # Required by Grazie API
         }
 
-        # Copy anthropic headers
+        # Copy anthropic headers (override defaults if provided)
         for key in ['anthropic-version', 'anthropic-beta']:
             if self.headers.get(key):
                 headers[key] = self.headers.get(key)
