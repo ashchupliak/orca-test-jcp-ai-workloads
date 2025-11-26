@@ -13,6 +13,8 @@ import subprocess
 import uuid
 import threading
 import logging
+import time
+import select
 from datetime import datetime
 from pathlib import Path
 
@@ -410,6 +412,7 @@ def run_git_task(session: AgentSession):
             check = subprocess.run(['which', cmd], capture_output=True, text=True)
             if check.returncode == 0:
                 claude_cmd = cmd
+                session.add_progress(f"Found CLI: {check.stdout.strip()}")
                 break
 
         if not claude_cmd:
@@ -417,6 +420,10 @@ def run_git_task(session: AgentSession):
 
         # Run Claude Code
         session.add_progress(f"Running {claude_cmd}...")
+
+        # Log environment for debugging
+        session.add_progress(f"GRAZIE_API_TOKEN set: {'yes' if env.get('GRAZIE_API_TOKEN') else 'no'}")
+        session.add_progress(f"GRAZIE_ENVIRONMENT: {env.get('GRAZIE_ENVIRONMENT', 'not set')}")
 
         # Claude Code CLI: prompt is positional arg, use --print for non-interactive mode
         # --dangerously-skip-permissions skips permission prompts for automation
@@ -440,11 +447,28 @@ def run_git_task(session: AgentSession):
         )
 
         session.process = process
+        session.add_progress("Process started, waiting for output...")
 
         output_lines = []
+        timeout_seconds = 300  # 5 minute timeout
+        start_time = time.time()
+        last_output_time = start_time
+
         try:
             # Read output with timeout handling
             while True:
+                # Check timeout
+                elapsed = time.time() - start_time
+                idle_time = time.time() - last_output_time
+
+                if elapsed > timeout_seconds:
+                    session.add_progress(f"Timeout after {timeout_seconds}s - killing process")
+                    process.kill()
+                    raise Exception(f"Claude Code timed out after {timeout_seconds} seconds")
+
+                if idle_time > 60:  # No output for 60 seconds
+                    session.add_progress(f"No output for {int(idle_time)}s (total: {int(elapsed)}s)...")
+
                 # Check if process has finished
                 retcode = process.poll()
                 if retcode is not None:
@@ -457,13 +481,18 @@ def run_git_task(session: AgentSession):
                                 session.add_progress(line.strip())
                     break
 
-                # Read available output
-                line = process.stdout.readline()
-                if line:
-                    output_lines.append(line)
-                    session.add_progress(line.strip())
+                # Use select for non-blocking read with timeout
+                ready, _, _ = select.select([process.stdout], [], [], 1.0)
+                if ready:
+                    line = process.stdout.readline()
+                    if line:
+                        output_lines.append(line)
+                        session.add_progress(line.strip())
+                        last_output_time = time.time()
         except Exception as e:
             session.add_progress(f"Error reading output: {e}")
+            if process.poll() is None:
+                process.kill()
 
         session.output = ''.join(output_lines)
 
