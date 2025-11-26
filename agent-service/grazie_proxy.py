@@ -112,11 +112,14 @@ class GrazieProxyHandler(BaseHTTPRequestHandler):
                     self.wfile.write(chunk)
 
         except urllib.error.HTTPError as e:
+            error_body = e.read() if e.fp else b'{}'
             print(f"[proxy] HTTP Error: {e.code} - {e.reason}", file=sys.stderr)
+            print(f"[proxy] Error URL: {target_url}", file=sys.stderr)
+            print(f"[proxy] Error body: {error_body.decode('utf-8', errors='replace')[:500]}", file=sys.stderr)
+            sys.stderr.flush()
             self.send_response(e.code)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            error_body = e.read() if e.fp else b'{}'
             self.wfile.write(error_body)
 
         except Exception as e:
