@@ -1,5 +1,6 @@
 #!/bin/bash
 # Start SSH, Chat, and Agent services for Orca containers
+# This script ensures reliable service startup with health checks
 
 set -e
 
@@ -7,85 +8,133 @@ echo "=== Orca Container Services Startup ==="
 echo "Container: ${CONTAINER_NAME:-unknown}"
 echo "Starting at: $(date)"
 
+# Function to wait for a service to be healthy
+wait_for_health() {
+    local port=$1
+    local name=$2
+    local max_attempts=${3:-30}
+    local attempt=1
+
+    echo "Waiting for $name (port $port) to be healthy..."
+    while [ $attempt -le $max_attempts ]; do
+        if curl -s -f "http://localhost:$port/health" > /dev/null 2>&1; then
+            echo "✓ $name is healthy (attempt $attempt)"
+            return 0
+        fi
+        echo "  Waiting... (attempt $attempt/$max_attempts)"
+        sleep 1
+        attempt=$((attempt + 1))
+    done
+
+    echo "✗ $name failed to become healthy after $max_attempts attempts"
+    return 1
+}
+
+# Function to start and monitor a service
+start_service() {
+    local service_dir=$1
+    local service_name=$2
+    local port=$3
+    local log_file="/tmp/${service_name}.log"
+
+    if [ ! -d "$service_dir" ]; then
+        echo "ERROR: $service_name not found at $service_dir"
+        return 1
+    fi
+
+    echo "Installing $service_name dependencies..."
+    cd "$service_dir"
+    pip3 install --quiet --no-cache-dir -r requirements.txt 2>/dev/null || true
+
+    echo "Starting $service_name on port $port..."
+
+    # Kill any existing process on this port
+    pkill -f "python3.*app.py.*$port" 2>/dev/null || true
+
+    # Start the service
+    nohup python3 app.py > "$log_file" 2>&1 &
+    local pid=$!
+    echo "$pid" > "/tmp/${service_name}.pid"
+
+    # Wait for service to be healthy
+    if wait_for_health "$port" "$service_name" 30; then
+        echo "✓ $service_name started successfully (PID: $pid)"
+        return 0
+    else
+        echo "✗ $service_name failed to start"
+        echo "=== $service_name error log ==="
+        cat "$log_file" 2>/dev/null || echo "No log file"
+        echo "=== End of log ==="
+        return 1
+    fi
+}
+
+# Function to monitor and restart services
+monitor_services() {
+    while true; do
+        # Check chat service
+        if ! curl -s -f "http://localhost:8000/health" > /dev/null 2>&1; then
+            echo "[$(date)] Chat service unhealthy, restarting..."
+            start_service "/workspace/common/chat-service" "chat-service" 8000 || true
+        fi
+
+        # Check agent service
+        if ! curl -s -f "http://localhost:8001/health" > /dev/null 2>&1; then
+            echo "[$(date)] Agent service unhealthy, restarting..."
+            start_service "/workspace/common/agent-service" "agent-service" 8001 || true
+        fi
+
+        sleep 30
+    done
+}
+
 # Start SSH server (if not already running)
 echo "Starting SSH server..."
-sudo service ssh start || echo "SSH already running or not available"
+sudo service ssh start 2>/dev/null || echo "SSH not available or already running"
 
 # Set root password for SSH access
-echo "root:root" | sudo chpasswd
+echo "root:root" | sudo chpasswd 2>/dev/null || true
 
-# Install chat service dependencies
-if [ ! -d "/workspace/common/chat-service" ]; then
-    echo "ERROR: Chat service not found at /workspace/common/chat-service"
-    echo "Make sure the workspace is mounted correctly"
-else
-    echo "Installing chat service dependencies..."
-    cd /workspace/common/chat-service
+# Start chat service
+echo ""
+echo "=== Starting Chat Service ==="
+start_service "/workspace/common/chat-service" "chat-service" 8000 || echo "Warning: Chat service may not be available"
 
-    # Install Flask if not already installed
-    pip3 install --quiet --no-cache-dir -r requirements.txt || echo "Flask already installed"
-
-    # Start chat service in background
-    echo "Starting chat service on port 8000..."
-    nohup python3 app.py > /tmp/chat-service.log 2>&1 &
-    CHAT_PID=$!
-    echo "Chat service started with PID: $CHAT_PID"
-
-    # Wait a moment and check if service is running
-    sleep 2
-    if ps -p $CHAT_PID > /dev/null; then
-        echo "✓ Chat service is running"
-        echo "  Check logs: tail -f /tmp/chat-service.log"
-    else
-        echo "✗ Chat service failed to start"
-        echo "  === Chat service error log ==="
-        cat /tmp/chat-service.log 2>/dev/null || echo "No log file"
-        echo "  === End of chat service log ==="
-    fi
-fi
-
-# Install agent service dependencies
-if [ ! -d "/workspace/common/agent-service" ]; then
-    echo "ERROR: Agent service not found at /workspace/common/agent-service"
-    echo "Make sure the workspace is mounted correctly"
-else
-    echo "Installing agent service dependencies..."
-    cd /workspace/common/agent-service
-
-    # Install Flask if not already installed
-    pip3 install --quiet --no-cache-dir -r requirements.txt || echo "Flask already installed"
-
-    # Start agent service in background
-    echo "Starting agent service on port 8001..."
-    nohup python3 app.py > /tmp/agent-service.log 2>&1 &
-    AGENT_PID=$!
-    echo "Agent service started with PID: $AGENT_PID"
-
-    # Wait a moment and check if service is running
-    sleep 2
-    if ps -p $AGENT_PID > /dev/null; then
-        echo "✓ Agent service is running"
-        echo "  Check logs: tail -f /tmp/agent-service.log"
-    else
-        echo "✗ Agent service failed to start"
-        echo "  === Agent service error log ==="
-        cat /tmp/agent-service.log 2>/dev/null || echo "No log file"
-        echo "  === End of agent service log ==="
-    fi
-fi
+# Start agent service
+echo ""
+echo "=== Starting Agent Service ==="
+start_service "/workspace/common/agent-service" "agent-service" 8001 || echo "Warning: Agent service may not be available"
 
 echo ""
 echo "=== Services Status ==="
 echo "SSH: $(service ssh status 2>&1 | head -1 || echo 'Not available')"
-echo "Chat: http://localhost:8000/health"
-echo "Agent: http://localhost:8001/health"
+
+# Final health check
+if curl -s -f "http://localhost:8000/health" > /dev/null 2>&1; then
+    echo "Chat Service (8000): ✓ Healthy"
+else
+    echo "Chat Service (8000): ✗ Unhealthy"
+fi
+
+if curl -s -f "http://localhost:8001/health" > /dev/null 2>&1; then
+    echo "Agent Service (8001): ✓ Healthy"
+else
+    echo "Agent Service (8001): ✗ Unhealthy"
+fi
+
 echo ""
 echo "=== Ready for connections ==="
 echo "Terminal: ssh root@localhost (password: root)"
-echo "Chat API: curl http://localhost:8000/api/chat"
-echo "Agent API: curl http://localhost:8001/api/agent/start"
+echo "Chat API: http://localhost:8000/health"
+echo "Agent API: http://localhost:8001/health"
 echo "Logs: tail -f /tmp/chat-service.log /tmp/agent-service.log"
 echo ""
+
+# Start background monitor for service health
+echo "Starting service health monitor..."
+monitor_services &
+MONITOR_PID=$!
+echo "Health monitor started (PID: $MONITOR_PID)"
 
 # Keep container running
 exec "$@"
