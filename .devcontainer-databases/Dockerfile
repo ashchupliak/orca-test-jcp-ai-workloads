@@ -1,21 +1,23 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu
 
-# Install Java 21 for unified service
+# Install Node.js, supervisor, and dependencies
 RUN apt-get update && apt-get install -y \
-    openjdk-21-jdk \
-    gradle \
     supervisor \
     curl \
-    postgresql-client \
-    mysql-client \
-    sqlite3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # Install code-server for IDE
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 
-# Copy and build unified service
-COPY unified-service-java/build/libs/unified-service.jar /opt/unified-service/unified-service.jar
+# Copy unified service and install dependencies
+COPY unified-service-node /opt/unified-service
+WORKDIR /opt/unified-service
+RUN npm install --production
 
 # Copy supervisor config
 COPY common-config/supervisord.conf /etc/supervisor/conf.d/unified-service.conf
