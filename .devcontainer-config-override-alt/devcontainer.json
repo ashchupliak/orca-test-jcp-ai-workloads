@@ -1,26 +1,10 @@
 {
-  "name": "Config Override Test - Alternative",
-  "image": "python:3.11-slim",
-  "runArgs": [
-    "-p",
-    "8000:8000",
-    "-p",
-    "8001:8001",
-    "-p",
-    "8080:8080"
-  ],
-  "postCreateCommand": "pip install --no-cache-dir flask flask-cors || pip3 install --no-cache-dir flask flask-cors",
-  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/unified-service/start.sh",
-  "forwardPorts": [
-    8000,
-    8001
-  ],
+  "name": "Config Override Alt Development",
+  "dockerFile": "Dockerfile",
+  "context": "..",
+  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
   "remoteEnv": {
-    "CONFIG_SOURCE": "alternative-config",
-    "CONFIG_TYPE": "path",
-    "CONTAINER_NAME": "config-override-alternative",
-    "TEST_MODE": "devcontainer-alternative",
-    "PYTHONPATH": "/workspaces/orca-test-jcp-ai-workloads",
-    "ALTERNATIVE_CONFIG": "true"
-  }
+    "CONTAINER_NAME": "config-override-alt"
+  },
+  "forwardPorts": [8000, 8001, 8080]
 }

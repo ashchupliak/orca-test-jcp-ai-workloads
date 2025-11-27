@@ -1,16 +1,10 @@
 {
-  "name": "Lightweight Agent Testing - Python + Claude",
-  "dockerComposeFile": "docker-compose.yml",
-  "service": "app",
-  "workspaceFolder": "/workspace",
-
+  "name": "Lightweight Agent Development",
+  "dockerFile": "Dockerfile",
+  "context": "..",
+  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
   "remoteEnv": {
-    "PYTHONPATH": "/workspace",
-    "WORKSPACE_ROOT": "/workspace",
     "CONTAINER_NAME": "lightweight-agent"
   },
-
-  "forwardPorts": [8000, 8001, 35697],
-
-  "postStartCommand": "bash /workspace/common/unified-service/start.sh"
+  "forwardPorts": [8000, 8001, 8080]
 }

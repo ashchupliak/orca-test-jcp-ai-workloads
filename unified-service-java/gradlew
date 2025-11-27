@@ -1,0 +1,3 @@
+#!/bin/sh
+# Gradle wrapper - minimal version
+exec java -jar /opt/gradle/lib/gradle-launcher-*.jar "$@"

@@ -1,32 +1,10 @@
 {
-  "name": "JavaScript/Node.js Development Tests",
-  "image": "mcr.microsoft.com/devcontainers/base:debian",
-  "runArgs": [
-    "-p",
-    "8000:8000",
-    "-p",
-    "8001:8001",
-    "-p",
-    "8080:8080"
-  ],
-  "features": {
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.11"
-    },
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "lts"
-    }
-  },
+  "name": "JavaScript/Node.js Development",
+  "dockerFile": "Dockerfile",
+  "context": "..",
+  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
   "remoteEnv": {
-    "PYTHONPATH": "/workspace",
-    "TEST_MODE": "devcontainer",
     "CONTAINER_NAME": "javascript"
   },
-  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/unified-service/start.sh",
-  "forwardPorts": [
-    8000,
-    8001,
-    8080
-  ],
-  "postCreateCommand": "pip install --no-cache-dir flask flask-cors || pip3 install --no-cache-dir flask flask-cors"
+  "forwardPorts": [8000, 8001, 8080]
 }
