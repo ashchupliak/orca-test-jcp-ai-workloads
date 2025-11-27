@@ -6,5 +6,7 @@
   "remoteEnv": {
     "CONTAINER_NAME": "dotnet"
   },
-  "forwardPorts": [8000, 8001, 8080]
+  "forwardPorts": [8000, 8001, 8080],
+  "postStartCommand": "sudo /usr/bin/supervisord -c /etc/supervisor/supervisord.conf",
+  "remoteUser": "vscode"
 }

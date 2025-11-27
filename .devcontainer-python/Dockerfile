@@ -25,5 +25,4 @@ COPY common-config/supervisord.conf /etc/supervisor/conf.d/unified-service.conf
 # Expose ports
 EXPOSE 8000 8001 8080
 
-# Start supervisor which will manage all services
-CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
+# No CMD - devcontainer will handle lifecycle
