@@ -1,12 +1,14 @@
 {
   "name": "unified-service",
-  "version": "1.0.0",
-  "description": "Unified service for chat, agent, and IDE endpoints",
+  "version": "2.0.0",
+  "description": "Unified service for Orca AI Workload Containers - Chat, Agent, and IDE endpoints",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "uuid": "^9.0.0"
   }
 }
