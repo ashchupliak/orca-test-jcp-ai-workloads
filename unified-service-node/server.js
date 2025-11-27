@@ -562,32 +562,19 @@ async function executeGitTask(sessionId, token, environment, model, task, gitRep
     }
     session.git_status.branch_created = true;
 
-    // Step 5: Execute Claude Code
-    session.progress.push('Executing Claude Code agent...');
+    // Step 5: Execute Claude via Grazie API
+    session.progress.push('Executing Claude agent via Grazie API...');
     session.progress.push(`Task: ${task}`);
+    session.progress.push(`Environment: ${environment}`);
+    session.progress.push(`Model: ${model}`);
 
-    // Set up environment for Claude Code
-    const claudeEnv = { ...process.env };
-    const anthropicBase = ANTHROPIC_ENDPOINTS[environment] || ANTHROPIC_ENDPOINTS['STAGING'];
-    claudeEnv.ANTHROPIC_API_KEY = token;
-    claudeEnv.ANTHROPIC_BASE_URL = anthropicBase;
-
-    // Try to use Claude Code CLI if available
-    result = await runCommand(`claude --print "${task.replace(/"/g, '\\"')}"`, repoDir, claudeEnv);
-
-    if (!result.success) {
-      // Claude Code not available, use Anthropic API directly
-      session.progress.push('Claude Code CLI not available, using API directly...');
-
-      const apiResponse = await callAnthropicApi(token, environment, model, task, repoDir);
-      if (apiResponse) {
-        session.progress.push('Received response from Claude API');
-        await applyClaudeSuggestions(repoDir, apiResponse, session);
-      } else {
-        session.progress.push('Warning: Could not get response from API');
-      }
+    // Call Anthropic API directly via Grazie proxy (more reliable than CLI in containers)
+    const apiResponse = await callAnthropicApi(token, environment, model, task, repoDir);
+    if (apiResponse) {
+      session.progress.push('Received response from Claude API');
+      await applyClaudeSuggestions(repoDir, apiResponse, session);
     } else {
-      session.progress.push('Claude Code executed successfully');
+      session.progress.push('Warning: Could not get response from API');
     }
 
     // Step 6: Check for changes
