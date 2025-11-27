@@ -12,7 +12,7 @@
     "TEST_MODE": "devcontainer",
     "CONTAINER_NAME": "rust"
   },
-  "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
+  "postStartCommand": "sleep infinity",
   "forwardPorts": [
     8000,
     8001,
