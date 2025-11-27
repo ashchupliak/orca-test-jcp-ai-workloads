@@ -89,5 +89,6 @@ echo "[$(date)] Container startup complete!" | tee -a "$LOG_FILE"
 echo "[$(date)] Logs: tail -f $LOG_FILE" | tee -a "$LOG_FILE"
 echo "[$(date)] ========================================" | tee -a "$LOG_FILE"
 
-# Keep container running
-sleep infinity
+# postStartCommand must exit cleanly - container is kept running by docker-compose or devcontainer
+# Services are already running in the background
+exit 0
