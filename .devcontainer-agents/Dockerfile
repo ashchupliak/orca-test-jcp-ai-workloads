@@ -12,9 +12,7 @@ RUN apt-get update && apt-get install -y \
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 
 # Copy and build unified service
-COPY unified-service-java /opt/unified-service
-WORKDIR /opt/unified-service
-RUN ./gradlew clean bootJar --no-daemon || gradle clean bootJar --no-daemon
+COPY unified-service-java/build/libs/unified-service.jar /opt/unified-service/unified-service.jar
 
 # Copy supervisor config
 COPY common-config/supervisord.conf /etc/supervisor/conf.d/unified-service.conf
