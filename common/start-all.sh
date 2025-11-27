@@ -1,6 +1,6 @@
 #!/bin/bash
 # Universal startup script for all devcontainers
-# Starts chat service (8000), agent service (8001), and IDE (8080) if available
+# Starts unified Node.js service (ports 8000, 8001) and IDE (8080)
 
 set -e
 
@@ -21,21 +21,39 @@ echo "[$(date)] Starting container services..." | tee -a "$LOG_FILE"
 echo "[$(date)] Workspace: $WORKSPACE_DIR" | tee -a "$LOG_FILE"
 echo "[$(date)] ========================================" | tee -a "$LOG_FILE"
 
-# Step 1: Start chat and agent services
-echo "[$(date)] Step 1: Starting chat and agent services..." | tee -a "$LOG_FILE"
-if [ -f "$WORKSPACE_DIR/common/start-services.sh" ]; then
-    bash "$WORKSPACE_DIR/common/start-services.sh" >> "$LOG_FILE" 2>&1 &
-    SERVICES_PID=$!
-    echo "[$(date)] Services started with PID $SERVICES_PID" | tee -a "$LOG_FILE"
+# Step 1: Install Node.js dependencies for unified service
+echo "[$(date)] Step 1: Installing unified service dependencies..." | tee -a "$LOG_FILE"
+if [ -f "$WORKSPACE_DIR/common/unified-service/package.json" ]; then
+    cd "$WORKSPACE_DIR/common/unified-service"
+    if command -v npm &> /dev/null; then
+        npm install --silent >> "$LOG_FILE" 2>&1 || echo "Warning: npm install failed" | tee -a "$LOG_FILE"
+    else
+        echo "WARNING: npm not found, cannot install dependencies" | tee -a "$LOG_FILE"
+    fi
 else
-    echo "[$(date)] WARNING: start-services.sh not found at $WORKSPACE_DIR/common/" | tee -a "$LOG_FILE"
+    echo "WARNING: unified-service/package.json not found" | tee -a "$LOG_FILE"
+fi
+
+# Step 2: Start unified Node.js service (ports 8000 and 8001)
+echo "[$(date)] Step 2: Starting unified Node.js service..." | tee -a "$LOG_FILE"
+if [ -f "$WORKSPACE_DIR/common/unified-service/server.js" ]; then
+    cd "$WORKSPACE_DIR/common/unified-service"
+    if command -v node &> /dev/null; then
+        node server.js >> "$LOG_FILE" 2>&1 &
+        SERVICE_PID=$!
+        echo "[$(date)] Unified service started with PID $SERVICE_PID" | tee -a "$LOG_FILE"
+    else
+        echo "ERROR: Node.js not found, cannot start unified service" | tee -a "$LOG_FILE"
+    fi
+else
+    echo "ERROR: unified-service/server.js not found" | tee -a "$LOG_FILE"
 fi
 
 # Wait for services to initialize
 sleep 5
 
-# Step 2: Start IDE (code-server) if installed
-echo "[$(date)] Step 2: Checking for code-server..." | tee -a "$LOG_FILE"
+# Step 3: Start IDE (code-server) if installed
+echo "[$(date)] Step 3: Checking for code-server..." | tee -a "$LOG_FILE"
 if command -v code-server &> /dev/null; then
     echo "[$(date)] Starting code-server IDE on port 8080..." | tee -a "$LOG_FILE"
     code-server \
@@ -89,6 +107,5 @@ echo "[$(date)] Container startup complete!" | tee -a "$LOG_FILE"
 echo "[$(date)] Logs: tail -f $LOG_FILE" | tee -a "$LOG_FILE"
 echo "[$(date)] ========================================" | tee -a "$LOG_FILE"
 
-# postStartCommand must exit cleanly - container is kept running by docker-compose or devcontainer
-# Services are already running in the background
+# postStartCommand must exit cleanly - container is kept running by devcontainer
 exit 0

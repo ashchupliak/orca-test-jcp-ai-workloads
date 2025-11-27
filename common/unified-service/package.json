@@ -1,0 +1,12 @@
+{
+  "name": "orca-unified-service",
+  "version": "1.0.0",
+  "description": "Unified Node.js service for Chat, Agent, and IDE endpoints",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
