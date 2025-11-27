@@ -21,6 +21,8 @@
   "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
   "forwardPorts": [
     8000,
-    8001
-  ]
+    8001,
+    8080
+  ],
+  "postCreateCommand": "curl -fsSL https://code-server.dev/install.sh | sh"
 }

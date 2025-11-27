@@ -1,9 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)"
+      "Bash(npm install:*)",
+      "Bash(claude-code --version)"
     ],
-    "deny": [],
-    "ask": []
+    "defaultMode": "bypassPermissions"
+  },
+  "includeCoAuthoredBy": false,
+  "commitMessagePolicy": {
+    "neverMentionAssistant": true,
+    "neverMentionClaude": true
   }
 }

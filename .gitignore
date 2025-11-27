@@ -51,3 +51,7 @@ logs/
 
 # Note: .devcontainer/devcontainer.json should be committed
 !devcontainer.json
+
+# Claude Code local settings
+.claude/
+.mcp.json
