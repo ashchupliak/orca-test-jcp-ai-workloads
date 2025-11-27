@@ -13,5 +13,5 @@
 
   "forwardPorts": [8000, 8001],
 
-  "postStartCommand": "bash /workspace/.devcontainer-grazie/start-server.sh"
+  "postStartCommand": "bash /workspace/common/unified-service/start.sh"
 }

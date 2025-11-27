@@ -56,7 +56,7 @@
       }
     }
   },
-  "postCreateCommand": "pip install --no-cache-dir requests flask pytest flask-cors || pip3 install --no-cache-dir requests flask pytest flask-cors && bash scripts/install-tools.sh && curl -fsSL https://code-server.dev/install.sh | sh",
+  "postCreateCommand": "pip install --no-cache-dir flask flask-cors || pip3 install --no-cache-dir flask flask-cors",
   "forwardPorts": [
     3000,
     3001,
@@ -73,7 +73,7 @@
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
-  "postStartCommand": "echo '=== Running AI Workloads Test Suite ===' && bash scripts/run-all-tests.sh --quick --output /tmp/quick-suite.json 2>&1 | tee /tmp/test-execution.log && echo '=== Tests Complete - Keeping container alive ===' && tail -f /tmp/test-execution.log",
+  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/unified-service/start.sh",
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
     "GOPATH": "/go",

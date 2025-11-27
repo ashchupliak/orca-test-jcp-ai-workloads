@@ -25,8 +25,8 @@
     "TEST_MODE": "devcontainer",
     "CONTAINER_NAME": "mcp"
   },
-  "postCreateCommand": "pip install --no-cache-dir requests flask pytest flask-cors || pip3 install --no-cache-dir requests flask pytest flask-cors && npm install -g @modelcontextprotocol/sdk && curl -fsSL https://code-server.dev/install.sh | sh",
-  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/start-all.sh",
+  "postCreateCommand": "pip install --no-cache-dir flask flask-cors || pip3 install --no-cache-dir flask flask-cors",
+  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/unified-service/start.sh",
   "forwardPorts": [
     8000,
     8001

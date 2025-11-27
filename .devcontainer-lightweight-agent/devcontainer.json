@@ -10,5 +10,7 @@
     "CONTAINER_NAME": "lightweight-agent"
   },
 
-  "forwardPorts": [8000, 8001, 35697]
+  "forwardPorts": [8000, 8001, 35697],
+
+  "postStartCommand": "bash /workspace/common/unified-service/start.sh"
 }

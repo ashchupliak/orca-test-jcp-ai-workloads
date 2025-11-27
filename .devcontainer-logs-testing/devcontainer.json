@@ -9,7 +9,7 @@
     "-p",
     "8080:8080"
   ],
-  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/start-all.sh",
+  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/unified-service/start.sh",
   "forwardPorts": [
     8000,
     8001
@@ -19,5 +19,5 @@
     "TEST_MODE": "devcontainer",
     "CONTAINER_NAME": "logs-testing"
   },
-  "postCreateCommand": "pip install --no-cache-dir requests flask pytest flask-cors || pip3 install --no-cache-dir requests flask pytest flask-cors && curl -fsSL https://code-server.dev/install.sh | sh"
+  "postCreateCommand": "pip install --no-cache-dir flask flask-cors || pip3 install --no-cache-dir flask flask-cors"
 }
