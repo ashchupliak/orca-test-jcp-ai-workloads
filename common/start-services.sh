@@ -4,6 +4,18 @@
 
 set -e
 
+# Detect workspace path (supports both /workspace and /workspaces/orca-test-jcp-ai-workloads)
+if [ -d "/workspaces/orca-test-jcp-ai-workloads/common" ]; then
+    WORKSPACE_DIR="/workspaces/orca-test-jcp-ai-workloads"
+elif [ -d "/workspace/common" ]; then
+    WORKSPACE_DIR="/workspace"
+else
+    echo "ERROR: Cannot find workspace directory"
+    exit 1
+fi
+
+echo "Using workspace directory: $WORKSPACE_DIR"
+
 # Lock file to prevent multiple instances
 LOCK_FILE="/tmp/start-services.lock"
 if [ -f "$LOCK_FILE" ]; then
@@ -118,13 +130,13 @@ monitor_services() {
         # Check chat service
         if ! curl -s -f "http://localhost:8000/health" > /dev/null 2>&1; then
             echo "[$(date)] Chat service unhealthy, restarting..."
-            start_service "/workspace/common/chat-service" "chat-service" 8000 || true
+            start_service "$WORKSPACE_DIR/common/chat-service" "chat-service" 8000 || true
         fi
 
         # Check agent service
         if ! curl -s -f "http://localhost:8001/health" > /dev/null 2>&1; then
             echo "[$(date)] Agent service unhealthy, restarting..."
-            start_service "/workspace/common/agent-service" "agent-service" 8001 || true
+            start_service "$WORKSPACE_DIR/common/agent-service" "agent-service" 8001 || true
         fi
 
         sleep 30
@@ -141,12 +153,12 @@ echo "root:root" | sudo chpasswd 2>/dev/null || true
 # Start chat service
 echo ""
 echo "=== Starting Chat Service ==="
-start_service "/workspace/common/chat-service" "chat-service" 8000 || echo "Warning: Chat service may not be available"
+start_service "$WORKSPACE_DIR/common/chat-service" "chat-service" 8000 || echo "Warning: Chat service may not be available"
 
 # Start agent service
 echo ""
 echo "=== Starting Agent Service ==="
-start_service "/workspace/common/agent-service" "agent-service" 8001 || echo "Warning: Agent service may not be available"
+start_service "$WORKSPACE_DIR/common/agent-service" "agent-service" 8001 || echo "Warning: Agent service may not be available"
 
 echo ""
 echo "=== Services Status ==="

@@ -14,7 +14,7 @@
     "CONTAINER_NAME": "python"
   },
 
-  "postCreateCommand": "pip install --no-cache-dir requests flask pytest",
-  "postStartCommand": "/workspaces/orca-test-jcp-ai-workloads/common/start-services.sh sleep infinity &",
-  "forwardPorts": [8000, 8001]
+  "postCreateCommand": "pip install --no-cache-dir requests flask pytest flask-cors && curl -fsSL https://code-server.dev/install.sh | sh",
+  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/.devcontainer-python/start-all.sh &",
+  "forwardPorts": [8000, 8001, 8080]
 }
