@@ -1,0 +1,9 @@
+{
+  "name": "Python Development (Minimal)",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "remoteEnv": {
+    "PYTHONPATH": "/workspaces/orca-test-jcp-ai-workloads"
+  },
+  "postCreateCommand": "pip install --no-cache-dir requests flask",
+  "forwardPorts": [8000, 8001, 8080]
+}

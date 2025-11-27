@@ -1,14 +1,12 @@
 {
-  "name": "Python Tests - Health Check, System Resources, Secrets, Networking",
+  "name": "Python Development",
   "image": "mcr.microsoft.com/devcontainers/python:3.11",
-
   "remoteEnv": {
     "PYTHONPATH": "/workspaces/orca-test-jcp-ai-workloads",
     "TEST_MODE": "devcontainer",
     "CONTAINER_NAME": "python"
   },
-
   "postCreateCommand": "pip install --no-cache-dir requests flask pytest flask-cors && curl -fsSL https://code-server.dev/install.sh | sh",
-  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/.devcontainer-python/start-all.sh &",
+  "postStartCommand": "nohup bash /workspaces/orca-test-jcp-ai-workloads/.devcontainer-python/start-all.sh > /tmp/start-all.log 2>&1 &",
   "forwardPorts": [8000, 8001, 8080]
 }
