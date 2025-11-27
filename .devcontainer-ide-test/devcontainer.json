@@ -1,6 +1,7 @@
 {
   "name": "IDE Test Environment",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
 
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {

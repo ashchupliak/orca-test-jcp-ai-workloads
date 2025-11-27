@@ -1,6 +1,7 @@
 {
   "name": "Logs Testing",
   "image": "python:3.11-slim",
+  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
   "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/start-all.sh",
   "forwardPorts": [8000, 8001],
   "remoteEnv": {

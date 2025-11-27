@@ -1,6 +1,7 @@
 {
   "name": ".NET/C# Development Tests",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
+  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest"
