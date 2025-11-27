@@ -29,9 +29,13 @@ RUN npm install -g @anthropic-ai/claude-code || echo "Claude Code installation s
 RUN pip install --no-cache-dir \
     requests \
     flask \
+    flask-cors \
     pytest \
     python-dotenv \
     rich
+
+# Install code-server for IDE on port 8080
+RUN curl -fsSL https://code-server.dev/install.sh | sh
 
 # Create workspace directory
 WORKDIR /workspace

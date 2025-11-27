@@ -1,7 +1,14 @@
 {
   "name": "JavaScript/Node.js Development Tests",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
+  "runArgs": [
+    "-p",
+    "8000:8000",
+    "-p",
+    "8001:8001",
+    "-p",
+    "8080:8080"
+  ],
   "features": {
     "ghcr.io/devcontainers/features/python:1": {
       "version": "3.11"
@@ -21,5 +28,5 @@
     8001,
     8080
   ],
-  "postCreateCommand": "curl -fsSL https://code-server.dev/install.sh | sh"
+  "postCreateCommand": "pip install --no-cache-dir requests flask pytest flask-cors || pip3 install --no-cache-dir requests flask pytest flask-cors && curl -fsSL https://code-server.dev/install.sh | sh"
 }

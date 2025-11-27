@@ -1,7 +1,14 @@
 {
   "name": "Agent Filesystem and Command Tests",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
+  "runArgs": [
+    "-p",
+    "8000:8000",
+    "-p",
+    "8001:8001",
+    "-p",
+    "8080:8080"
+  ],
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest"
@@ -20,5 +27,6 @@
   "forwardPorts": [
     8000,
     8001
-  ]
+  ],
+  "postCreateCommand": "pip install --no-cache-dir requests flask pytest flask-cors || pip3 install --no-cache-dir requests flask pytest flask-cors && curl -fsSL https://code-server.dev/install.sh | sh"
 }

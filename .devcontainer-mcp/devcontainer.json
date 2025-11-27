@@ -1,7 +1,14 @@
 {
   "name": "MCP (Model Context Protocol) Tests",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
+  "runArgs": [
+    "-p",
+    "8000:8000",
+    "-p",
+    "8001:8001",
+    "-p",
+    "8080:8080"
+  ],
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest"
@@ -18,7 +25,7 @@
     "TEST_MODE": "devcontainer",
     "CONTAINER_NAME": "mcp"
   },
-  "postCreateCommand": "npm install -g @modelcontextprotocol/sdk",
+  "postCreateCommand": "pip install --no-cache-dir requests flask pytest flask-cors || pip3 install --no-cache-dir requests flask pytest flask-cors && npm install -g @modelcontextprotocol/sdk && curl -fsSL https://code-server.dev/install.sh | sh",
   "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/start-all.sh",
   "forwardPorts": [
     8000,

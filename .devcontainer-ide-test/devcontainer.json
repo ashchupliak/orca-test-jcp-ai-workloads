@@ -1,8 +1,14 @@
 {
   "name": "IDE Test Environment",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
-
+  "runArgs": [
+    "-p",
+    "8000:8000",
+    "-p",
+    "8001:8001",
+    "-p",
+    "8080:8080"
+  ],
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
@@ -13,28 +19,30 @@
     },
     "ghcr.io/devcontainers/features/node:1": {
       "version": "20"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
     }
   },
-
   "containerEnv": {
     "IDE_EXTENSIONS": "vscodevim.vim,eamodio.gitlens,esbenp.prettier-vscode",
     "IDE_PORT": "8080",
     "CODE_SERVER_VERSION": "4.96.2",
     "WORKSPACE": "/workspaces/orca-test-jcp-ai-workloads"
   },
-
-  "postCreateCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/ide/setup-ide.sh",
+  "postCreateCommand": "pip install --no-cache-dir requests flask pytest flask-cors || pip3 install --no-cache-dir requests flask pytest flask-cors && bash /workspaces/orca-test-jcp-ai-workloads/common/ide/setup-ide.sh",
   "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/ide/start-ide.sh",
-
-  "forwardPorts": [8000, 8001, 8080],
-
+  "forwardPorts": [
+    8000,
+    8001,
+    8080
+  ],
   "portsAttributes": {
     "8080": {
       "label": "VS Code IDE",
       "onAutoForward": "notify"
     }
   },
-
   "customizations": {
     "vscode": {
       "settings": {
@@ -44,6 +52,5 @@
       }
     }
   },
-
   "remoteUser": "vscode"
 }

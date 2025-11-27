@@ -1,7 +1,14 @@
 {
   "name": "Database Client Tests",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
+  "runArgs": [
+    "-p",
+    "8000:8000",
+    "-p",
+    "8001:8001",
+    "-p",
+    "8080:8080"
+  ],
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest"
@@ -15,7 +22,7 @@
     "TEST_MODE": "devcontainer",
     "CONTAINER_NAME": "databases"
   },
-  "postCreateCommand": "apt-get update && apt-get install -y postgresql-client mysql-client redis-tools mongodb-clients libpq-dev && rm -rf /var/lib/apt/lists/* && pip install --no-cache-dir psycopg2-binary pymongo redis mysql-connector-python",
+  "postCreateCommand": "pip install --no-cache-dir requests flask pytest flask-cors || pip3 install --no-cache-dir requests flask pytest flask-cors && apt-get update && apt-get install -y postgresql-client mysql-client redis-tools mongodb-clients libpq-dev && rm -rf /var/lib/apt/lists/* && pip install --no-cache-dir psycopg2-binary pymongo redis mysql-connector-python && curl -fsSL https://code-server.dev/install.sh | sh",
   "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/start-all.sh",
   "forwardPorts": [
     8000,

@@ -1,10 +1,20 @@
 {
   "name": "Config Override Test - Alternative",
   "image": "python:3.11-slim",
-  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
-  "postCreateCommand": "bash /workspaces/orca-test-jcp-ai-workloads/.devcontainer-config-override-alt/init.sh",
+  "runArgs": [
+    "-p",
+    "8000:8000",
+    "-p",
+    "8001:8001",
+    "-p",
+    "8080:8080"
+  ],
+  "postCreateCommand": "pip install --no-cache-dir requests flask pytest flask-cors || pip3 install --no-cache-dir requests flask pytest flask-cors && bash /workspaces/orca-test-jcp-ai-workloads/.devcontainer-config-override-alt/init.sh && curl -fsSL https://code-server.dev/install.sh | sh",
   "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/start-all.sh",
-  "forwardPorts": [8000, 8001],
+  "forwardPorts": [
+    8000,
+    8001
+  ],
   "remoteEnv": {
     "CONFIG_SOURCE": "alternative-config",
     "CONFIG_TYPE": "path",

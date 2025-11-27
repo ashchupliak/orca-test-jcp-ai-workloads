@@ -1,8 +1,14 @@
 {
   "name": "JetBrains Developer Environment - Full Stack Testing (ARM64 Compatible)",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
-
+  "runArgs": [
+    "-p",
+    "8000:8000",
+    "-p",
+    "8001:8001",
+    "-p",
+    "8080:8080"
+  ],
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "moby": false
@@ -33,7 +39,6 @@
     "ghcr.io/devcontainers/features/php:1": {},
     "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {}
   },
-
   "customizations": {
     "vscode": {
       "extensions": [
@@ -51,25 +56,24 @@
       }
     }
   },
-
-  "postCreateCommand": "bash scripts/install-tools.sh",
-
+  "postCreateCommand": "pip install --no-cache-dir requests flask pytest flask-cors || pip3 install --no-cache-dir requests flask pytest flask-cors && bash scripts/install-tools.sh && curl -fsSL https://code-server.dev/install.sh | sh",
   "forwardPorts": [
-    3000, 3001, 3002,
+    3000,
+    3001,
+    3002,
     5432,
     3306,
     6379,
     27017,
-    8000, 8001, 8080, 8081
+    8000,
+    8001,
+    8080,
+    8081
   ],
-
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
-
-  "postCreateCommand": "bash scripts/install-tools.sh",
   "postStartCommand": "echo '=== Running AI Workloads Test Suite ===' && bash scripts/run-all-tests.sh --quick --output /tmp/quick-suite.json 2>&1 | tee /tmp/test-execution.log && echo '=== Tests Complete - Keeping container alive ===' && tail -f /tmp/test-execution.log",
-
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
     "GOPATH": "/go",
@@ -79,5 +83,3 @@
     "CUDA_VISIBLE_DEVICES": "0"
   }
 }
-
-

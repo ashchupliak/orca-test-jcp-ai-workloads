@@ -1,7 +1,14 @@
 {
   "name": "Docker-in-Docker Tests",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
+  "runArgs": [
+    "-p",
+    "8000:8000",
+    "-p",
+    "8001:8001",
+    "-p",
+    "8080:8080"
+  ],
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest"
@@ -21,7 +28,7 @@
     "TEST_MODE": "devcontainer",
     "CONTAINER_NAME": "docker"
   },
-  "postCreateCommand": "pip install --no-cache-dir flask redis",
+  "postCreateCommand": "pip install --no-cache-dir flask redis && curl -fsSL https://code-server.dev/install.sh | sh",
   "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/start-all.sh",
   "forwardPorts": [
     8000,
