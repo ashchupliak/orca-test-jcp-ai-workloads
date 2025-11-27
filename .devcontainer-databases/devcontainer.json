@@ -15,7 +15,7 @@
     "CONTAINER_NAME": "databases"
   },
   "postCreateCommand": "apt-get update && apt-get install -y postgresql-client mysql-client redis-tools mongodb-clients libpq-dev && rm -rf /var/lib/apt/lists/* && pip install --no-cache-dir psycopg2-binary pymongo redis mysql-connector-python",
-  "postStartCommand": "bash /workspace/common/start-all.sh",
+  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/start-all.sh",
   "forwardPorts": [
     8000,
     8001

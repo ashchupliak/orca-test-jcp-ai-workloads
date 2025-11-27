@@ -15,7 +15,7 @@
   "forwardPorts": [8000, 8001],
 
   "postCreateCommand": "setup-ai-tools.sh",
-  "postStartCommand": "bash /workspace/common/start-all.sh",
+  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/start-all.sh",
 
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {

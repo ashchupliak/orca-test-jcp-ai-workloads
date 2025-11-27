@@ -17,7 +17,7 @@
     "TEST_MODE": "devcontainer",
     "CONTAINER_NAME": "dotnet"
   },
-  "postStartCommand": "bash /workspace/common/start-all.sh",
+  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/start-all.sh",
   "forwardPorts": [
     8000,
     8001
