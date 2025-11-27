@@ -2,7 +2,7 @@
   "name": "Config Override Alt Development",
   "dockerFile": "Dockerfile",
   "context": "..",
-  "runArgs": ["-p", "8000:8000", "-p", "8001:8001", "-p", "8080:8080"],
+  "runArgs": ["--publish", "8000:8000", "--publish", "8001:8001", "--publish", "8080:8080"],
   "remoteEnv": {
     "CONTAINER_NAME": "config-override-alt"
   },
