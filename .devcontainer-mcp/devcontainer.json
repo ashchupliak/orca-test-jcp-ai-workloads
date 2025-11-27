@@ -18,7 +18,7 @@
     "CONTAINER_NAME": "mcp"
   },
   "postCreateCommand": "npm install -g @modelcontextprotocol/sdk",
-  "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
+  "postStartCommand": "bash /workspace/common/start-all.sh",
   "forwardPorts": [
     8000,
     8001

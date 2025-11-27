@@ -15,7 +15,7 @@
   "forwardPorts": [8000, 8001],
 
   "postCreateCommand": "setup-ai-tools.sh",
-  "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
+  "postStartCommand": "bash /workspace/common/start-all.sh",
 
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {

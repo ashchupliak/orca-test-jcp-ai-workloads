@@ -5,6 +5,6 @@
     "PYTHONPATH": "/workspaces/orca-test-jcp-ai-workloads"
   },
   "postCreateCommand": "pip install --no-cache-dir requests flask pytest flask-cors && curl -fsSL https://code-server.dev/install.sh | sh",
-  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/.devcontainer-python/start-all.sh || sleep infinity",
+  "postStartCommand": "bash /workspaces/orca-test-jcp-ai-workloads/common/start-all.sh",
   "forwardPorts": [8000, 8001, 8080]
 }

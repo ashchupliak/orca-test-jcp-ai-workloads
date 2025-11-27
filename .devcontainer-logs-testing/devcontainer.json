@@ -1,7 +1,7 @@
 {
   "name": "Logs Testing",
   "image": "python:3.11-slim",
-  "postStartCommand": "/workspace/common/start-services.sh sleep infinity &",
+  "postStartCommand": "bash /workspace/common/start-all.sh",
   "forwardPorts": [8000, 8001],
   "remoteEnv": {
     "PYTHONPATH": "/workspace",
