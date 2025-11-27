@@ -20,7 +20,7 @@ WORKDIR /opt/unified-service
 RUN npm install --production
 
 # Copy supervisor config
-COPY common-config/supervisord.conf /etc/supervisor/conf.d/unified-service.conf
+COPY common-config/supervisord.conf /etc/supervisor/supervisord.conf
 
 # Expose ports
 EXPOSE 8000 8001 8080
