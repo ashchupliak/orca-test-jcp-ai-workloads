@@ -4,9 +4,10 @@
   "context": "..",
   "runArgs": ["--publish", "8000:8000", "--publish", "8001:8001", "--publish", "8080:8080"],
   "remoteEnv": {
-    "CONTAINER_NAME": "config-override"
+    "CONTAINER_NAME": "config-override-test"
   },
   "forwardPorts": [8000, 8001, 8080],
+  "postCreateCommand": "echo 'CONFIG_SOURCE: config-override-path' && echo 'CONFIG_TYPE: path' && echo 'CONTAINER_NAME: config-override-test' && echo 'TEST_MODE: devcontainer' && echo 'CONFIG_OVERRIDE_TEST: PASSED - Primary config loaded' && echo 'Container initialized successfully with PRIMARY config'",
   "postStartCommand": "sudo /usr/bin/supervisord -c /etc/supervisor/supervisord.conf",
   "remoteUser": "vscode"
 }

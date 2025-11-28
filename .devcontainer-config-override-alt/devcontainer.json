@@ -4,9 +4,10 @@
   "context": "..",
   "runArgs": ["--publish", "8000:8000", "--publish", "8001:8001", "--publish", "8080:8080"],
   "remoteEnv": {
-    "CONTAINER_NAME": "config-override-alt"
+    "CONTAINER_NAME": "config-override-alternative"
   },
   "forwardPorts": [8000, 8001, 8080],
+  "postCreateCommand": "echo 'CONFIG_SOURCE: alternative-config' && echo 'CONFIG_TYPE: path' && echo 'CONTAINER_NAME: config-override-alternative' && echo 'TEST_MODE: devcontainer-alternative' && echo 'ALTERNATIVE_CONFIG: true' && echo 'This is the ALTERNATIVE configuration!' && echo 'CONFIG_OVERRIDE_TEST: PASSED - Alternative config loaded' && echo 'Container initialized successfully with ALTERNATIVE config'",
   "postStartCommand": "sudo /usr/bin/supervisord -c /etc/supervisor/supervisord.conf",
   "remoteUser": "vscode"
 }
