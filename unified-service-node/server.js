@@ -16,8 +16,17 @@ const { exec, spawn } = require('child_process');
 const fs = require('fs').promises;
 const path = require('path');
 const os = require('os');
+const http = require('http');
+const { WebSocketServer } = require('ws');
 
 const app = express();
+const server = http.createServer(app);
+
+// WebSocket server for real-time agent updates
+const wss = new WebSocketServer({ noServer: true });
+
+// Track WebSocket clients by session ID
+const sessionClients = new Map(); // sessionId -> Set<ws>
 
 // Parse JSON bodies
 app.use(express.json());
@@ -481,7 +490,7 @@ Only include files that need to be modified or created.`;
 /**
  * Parse and apply Claude's suggestions to the repository
  */
-async function applyClaudeSuggestions(repoPath, responseText, session) {
+async function applyClaudeSuggestions(repoPath, responseText, session, sessionId) {
   try {
     const filePattern = /FILE:\s*(.+?)\n```(?:\w+)?\n([\s\S]*?)```/g;
     let match;
@@ -498,16 +507,44 @@ async function applyClaudeSuggestions(repoPath, responseText, session) {
 
       // Write the file
       await fs.writeFile(fullPath, content);
-      session.progress.push(`Modified: ${filepath}`);
+      const msg = `Modified: ${filepath}`;
+      session.progress.push(msg);
+      broadcastProgress(sessionId, msg);
       applied = true;
     }
 
     if (!applied) {
-      session.progress.push('No file changes detected in response');
+      const msg = 'No file changes detected in response';
+      session.progress.push(msg);
+      broadcastProgress(sessionId, msg);
     }
   } catch (error) {
-    session.progress.push(`Error applying changes: ${error.message}`);
+    const msg = `Error applying changes: ${error.message}`;
+    session.progress.push(msg);
+    broadcastProgress(sessionId, msg);
   }
+}
+
+/**
+ * Helper to push progress and broadcast
+ */
+function pushProgress(session, sessionId, message) {
+  session.progress.push(message);
+  broadcastProgress(sessionId, message);
+}
+
+/**
+ * Helper to update status and broadcast full state
+ */
+function updateStatus(session, sessionId, status) {
+  session.status = status;
+  broadcastStatus(sessionId, {
+    status: session.status,
+    progress: session.progress || [],
+    gitStatus: session.git_status || {},
+    files: session.files || [],
+    error: session.error,
+  });
 }
 
 /**
@@ -521,12 +558,12 @@ async function executeGitTask(sessionId, token, environment, model, task, gitRep
 
   try {
     // Step 1: Create temp directory
-    session.progress.push('Creating temporary workspace...');
+    pushProgress(session, sessionId, 'Creating temporary workspace...');
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'claude-agent-'));
     session.temp_dir = tempDir;
 
     // Step 2: Clone repository
-    session.progress.push('Cloning repository...');
+    pushProgress(session, sessionId, 'Cloning repository...');
     session.git_status.cloning = true;
 
     // Prepare clone URL with authentication
@@ -547,15 +584,15 @@ async function executeGitTask(sessionId, token, environment, model, task, gitRep
     }
 
     session.git_status.cloned = true;
-    session.progress.push('Repository cloned successfully');
+    pushProgress(session, sessionId, 'Repository cloned successfully');
 
     // Step 3: Configure git
-    session.progress.push('Configuring git...');
+    pushProgress(session, sessionId, 'Configuring git...');
     await runCommand('git config user.email "claude-agent@orca-lab.local"', repoDir);
     await runCommand('git config user.name "Claude Agent"', repoDir);
 
     // Step 4: Create branch
-    session.progress.push(`Creating branch: ${branchName}`);
+    pushProgress(session, sessionId, `Creating branch: ${branchName}`);
     result = await runCommand(`git checkout -b "${branchName}"`, repoDir);
     if (!result.success) {
       throw new Error(`Failed to create branch: ${result.output}`);
@@ -563,27 +600,27 @@ async function executeGitTask(sessionId, token, environment, model, task, gitRep
     session.git_status.branch_created = true;
 
     // Step 5: Execute Claude via Grazie API
-    session.progress.push('Executing Claude agent via Grazie API...');
-    session.progress.push(`Task: ${task}`);
-    session.progress.push(`Environment: ${environment}`);
-    session.progress.push(`Model: ${model}`);
+    pushProgress(session, sessionId, 'Executing Claude agent via Grazie API...');
+    pushProgress(session, sessionId, `Task: ${task}`);
+    pushProgress(session, sessionId, `Environment: ${environment}`);
+    pushProgress(session, sessionId, `Model: ${model}`);
 
     // Call Anthropic API directly via Grazie proxy (more reliable than CLI in containers)
     const apiResponse = await callAnthropicApi(token, environment, model, task, repoDir);
     if (apiResponse) {
-      session.progress.push('Received response from Claude API');
-      await applyClaudeSuggestions(repoDir, apiResponse, session);
+      pushProgress(session, sessionId, 'Received response from Claude API');
+      await applyClaudeSuggestions(repoDir, apiResponse, session, sessionId);
     } else {
-      session.progress.push('Warning: Could not get response from API');
+      pushProgress(session, sessionId, 'Warning: Could not get response from API');
     }
 
     // Step 6: Check for changes
-    session.progress.push('Checking for changes...');
+    pushProgress(session, sessionId, 'Checking for changes...');
     result = await runCommand('git status --porcelain', repoDir);
 
     if (result.output.trim()) {
       // There are changes to commit
-      session.progress.push('Changes detected, staging files...');
+      pushProgress(session, sessionId, 'Changes detected, staging files...');
       await runCommand('git add -A', repoDir);
 
       // Step 7: Commit changes
@@ -592,36 +629,36 @@ async function executeGitTask(sessionId, token, environment, model, task, gitRep
 
       if (result.success) {
         session.git_status.committed = true;
-        session.progress.push('Changes committed');
+        pushProgress(session, sessionId, 'Changes committed');
 
         // Get changed files
         session.files = await getChangedFiles(repoDir);
 
         // Step 8: Push to remote
-        session.progress.push(`Pushing branch ${branchName} to remote...`);
+        pushProgress(session, sessionId, `Pushing branch ${branchName} to remote...`);
         result = await runCommand(`git push -u origin "${branchName}"`, repoDir);
 
         if (result.success) {
           session.git_status.pushed = true;
-          session.progress.push(`Branch ${branchName} pushed successfully`);
+          pushProgress(session, sessionId, `Branch ${branchName} pushed successfully`);
         } else {
-          session.progress.push(`Warning: Push failed - ${result.output}`);
+          pushProgress(session, sessionId, `Warning: Push failed - ${result.output}`);
         }
       } else {
-        session.progress.push('No changes to commit');
+        pushProgress(session, sessionId, 'No changes to commit');
       }
     } else {
-      session.progress.push('No changes were made by the agent');
+      pushProgress(session, sessionId, 'No changes were made by the agent');
     }
 
     // Mark as completed
-    session.status = 'completed';
-    session.progress.push('Task completed successfully!');
+    pushProgress(session, sessionId, 'Task completed successfully!');
+    updateStatus(session, sessionId, 'completed');
 
   } catch (error) {
-    session.status = 'error';
     session.error = error.message;
-    session.progress.push(`Error: ${error.message}`);
+    pushProgress(session, sessionId, `Error: ${error.message}`);
+    updateStatus(session, sessionId, 'error');
     log(`[Git Task] Error: ${error.message}`);
   } finally {
     // Cleanup temp directory (delayed to allow file reading)
@@ -890,10 +927,132 @@ process.on('SIGINT', () => {
 });
 
 // ============================================================================
+// WebSocket Setup for Real-time Agent Updates
+// ============================================================================
+
+// Handle WebSocket upgrade requests
+server.on('upgrade', (request, socket, head) => {
+  const url = new URL(request.url, `http://${request.headers.host}`);
+  const match = url.pathname.match(/^\/api\/agent\/ws\/(.+)$/);
+
+  if (match && PORT === 8001) {
+    const sessionId = match[1];
+    log(`[WebSocket] Upgrade request for session: ${sessionId}`);
+
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      ws.sessionId = sessionId;
+      wss.emit('connection', ws, request);
+    });
+  } else {
+    log(`[WebSocket] Rejecting upgrade request: ${url.pathname}`);
+    socket.destroy();
+  }
+});
+
+// Handle WebSocket connections
+wss.on('connection', (ws) => {
+  const sessionId = ws.sessionId;
+  log(`[WebSocket] Client connected for session: ${sessionId}`);
+
+  // Add client to session clients map
+  if (!sessionClients.has(sessionId)) {
+    sessionClients.set(sessionId, new Set());
+  }
+  sessionClients.get(sessionId).add(ws);
+
+  // Send current state immediately on connect
+  const session = agentSessions.get(sessionId);
+  if (session) {
+    ws.send(JSON.stringify({
+      type: 'status',
+      state: {
+        status: session.status,
+        progress: session.progress || [],
+        gitStatus: session.git_status || {
+          cloning: false,
+          cloned: false,
+          branch_created: false,
+          committed: false,
+          pushed: false,
+        },
+        files: session.files || [],
+        error: session.error,
+      }
+    }));
+  }
+
+  // Handle client messages (if needed in future)
+  ws.on('message', (message) => {
+    try {
+      const data = JSON.parse(message);
+      log(`[WebSocket] Received message from ${sessionId}:`, data);
+    } catch (e) {
+      log(`[WebSocket] Invalid message from ${sessionId}`);
+    }
+  });
+
+  // Handle client disconnect
+  ws.on('close', () => {
+    log(`[WebSocket] Client disconnected for session: ${sessionId}`);
+    sessionClients.get(sessionId)?.delete(ws);
+    if (sessionClients.get(sessionId)?.size === 0) {
+      sessionClients.delete(sessionId);
+    }
+  });
+
+  // Handle errors
+  ws.on('error', (error) => {
+    log(`[WebSocket] Error for session ${sessionId}: ${error.message}`);
+  });
+});
+
+/**
+ * Broadcast progress message to all clients for a session
+ */
+function broadcastProgress(sessionId, message) {
+  const clients = sessionClients.get(sessionId);
+  if (!clients || clients.size === 0) return;
+
+  const payload = JSON.stringify({ type: 'progress', message });
+  clients.forEach(ws => {
+    if (ws.readyState === 1) { // WebSocket.OPEN
+      try {
+        ws.send(payload);
+      } catch (e) {
+        log(`[WebSocket] Failed to send progress to ${sessionId}: ${e.message}`);
+      }
+    }
+  });
+}
+
+/**
+ * Broadcast status update to all clients for a session
+ */
+function broadcastStatus(sessionId, state) {
+  const clients = sessionClients.get(sessionId);
+  if (!clients || clients.size === 0) return;
+
+  const payload = JSON.stringify({ type: 'status', state });
+  clients.forEach(ws => {
+    if (ws.readyState === 1) { // WebSocket.OPEN
+      try {
+        ws.send(payload);
+      } catch (e) {
+        log(`[WebSocket] Failed to send status to ${sessionId}: ${e.message}`);
+      }
+    }
+  });
+}
+
+// Make broadcast functions available globally
+global.broadcastProgress = broadcastProgress;
+global.broadcastStatus = broadcastStatus;
+
+// ============================================================================
 // Start Server
 // ============================================================================
 
-app.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', () => {
   log('========================================');
   log(`Unified Service (Node.js) started`);
   log(`Listening on port ${PORT}`);
@@ -914,6 +1073,7 @@ app.listen(PORT, '0.0.0.0', () => {
     log('  GET  /api/agent/status/:id - Get session status');
     log('  GET  /api/agent/files/:id  - Get changed files');
     log('  POST /api/agent/stop/:id   - Stop session');
+    log('  WS   /api/agent/ws/:id     - WebSocket for real-time updates');
   }
   log('========================================');
 });

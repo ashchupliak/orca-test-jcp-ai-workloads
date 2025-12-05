@@ -1,14 +1,10 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(npm install:*)",
-      "Bash(claude-code --version)"
-    ],
     "defaultMode": "bypassPermissions"
   },
-  "includeCoAuthoredBy": false,
   "commitMessagePolicy": {
     "neverMentionAssistant": true,
-    "neverMentionClaude": true
+    "neverMentionClaude": true,
+    "includeCoAuthoredBy": false
   }
 }
