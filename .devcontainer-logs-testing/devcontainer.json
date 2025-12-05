@@ -10,6 +10,6 @@
     "PYTHONUNBUFFERED": "1"
   },
   "forwardPorts": [8000, 8001, 8080],
-  "postStartCommand": "sudo /usr/bin/supervisord -c /etc/supervisor/supervisord.conf",
+  "postStartCommand": "sudo /usr/bin/supervisord -c /etc/supervisor/supervisord.conf & sleep 2 && /opt/logs-testing/run-test.sh",
   "remoteUser": "vscode"
 }
