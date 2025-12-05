@@ -12,13 +12,10 @@ echo "[TEST-RUNNER] Starting test runner..."
 echo "[TEST-RUNNER] Waiting ${STARTUP_DELAY} seconds for container initialization..."
 sleep "$STARTUP_DELAY"
 
-# Check if TEST_SCRIPT is set
+# Check if TEST_SCRIPT is set, default to success test
 if [ -z "$TEST_SCRIPT" ]; then
-    echo "[TEST-RUNNER] ERROR: TEST_SCRIPT environment variable is not set"
-    echo "[TEST-RUNNER] Available test scripts:"
-    ls -la /workspaces/orca-test-jcp-ai-workloads/tests/11-logs-testing/test_logs_*.py 2>/dev/null || echo "  (tests not found - workspace may not be mounted)"
-    echo "[TEST-RUNNER] Exiting without running tests"
-    exit 0
+    echo "[TEST-RUNNER] TEST_SCRIPT not set, using default: test_logs_success.py"
+    TEST_SCRIPT="test_logs_success.py"
 fi
 
 # Full path to test script
