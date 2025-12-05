@@ -1,0 +1,16 @@
+{
+  "name": "Logs Testing - Failure",
+  "dockerFile": "../.devcontainer-logs-testing/Dockerfile",
+  "context": "..",
+  "runArgs": ["--publish", "8000:8000", "--publish", "8001:8001", "--publish", "8080:8080"],
+  "remoteEnv": {
+    "CONTAINER_NAME": "logs-testing-failure"
+  },
+  "containerEnv": {
+    "PYTHONUNBUFFERED": "1",
+    "TEST_SCRIPT": "test_logs_failure.py"
+  },
+  "forwardPorts": [8000, 8001, 8080],
+  "postStartCommand": "sudo /usr/bin/supervisord -c /etc/supervisor/supervisord.conf & sleep 2 && /opt/logs-testing/run-test.sh",
+  "remoteUser": "vscode"
+}
