@@ -1,0 +1,10 @@
+{
+  "name": "Error Test - Build Failure",
+  "dockerFile": "Dockerfile",
+  "context": ".",
+  "remoteUser": "root",
+  "containerEnv": {
+    "TEST_SCENARIO": "build_failure"
+  },
+  "postStartCommand": "echo 'This will never run because build fails'"
+}

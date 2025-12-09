@@ -1,0 +1,9 @@
+{
+  "name": "Error Test - Invalid Docker Image",
+  "image": "this-image-definitely-does-not-exist-12345:latest",
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "TEST_SCENARIO": "invalid_image"
+  },
+  "postStartCommand": "echo 'Container started successfully'"
+}

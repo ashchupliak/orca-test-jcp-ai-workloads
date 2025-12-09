@@ -1,0 +1,9 @@
+{
+  "name": "Error Test - Command Failure",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "TEST_SCENARIO": "command_failure"
+  },
+  "postStartCommand": "this-command-does-not-exist && echo 'Will never reach here'"
+}
