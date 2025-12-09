@@ -24,6 +24,7 @@ RUN npm install --production
 # Copy logs-testing specific supervisor config and test runner
 COPY .devcontainer-logs-testing/supervisord.conf /etc/supervisor/supervisord.conf
 COPY .devcontainer-logs-testing/run-test.sh /opt/logs-testing/run-test.sh
+COPY tests/11-logs-testing /opt/logs-testing/tests
 RUN chmod +x /opt/logs-testing/run-test.sh
 
 # Expose ports

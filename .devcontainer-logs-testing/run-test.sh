@@ -18,14 +18,18 @@ if [ -z "$TEST_SCRIPT" ]; then
     TEST_SCRIPT="test_logs_success.py"
 fi
 
-# Full path to test script
-TEST_PATH="/workspaces/orca-test-jcp-ai-workloads/tests/11-logs-testing/$TEST_SCRIPT"
-
-# Check if the test script exists
-if [ ! -f "$TEST_PATH" ]; then
-    echo "[TEST-RUNNER] ERROR: Test script not found: $TEST_PATH"
+# Full path to test script - try workspace mount first, fallback to built-in tests
+if [ -f "/workspaces/orca-test-jcp-ai-workloads/tests/11-logs-testing/$TEST_SCRIPT" ]; then
+    TEST_PATH="/workspaces/orca-test-jcp-ai-workloads/tests/11-logs-testing/$TEST_SCRIPT"
+elif [ -f "/opt/logs-testing/tests/$TEST_SCRIPT" ]; then
+    TEST_PATH="/opt/logs-testing/tests/$TEST_SCRIPT"
+else
+    echo "[TEST-RUNNER] ERROR: Test script not found: $TEST_SCRIPT"
+    echo "[TEST-RUNNER] Checked locations:"
+    echo "  - /workspaces/orca-test-jcp-ai-workloads/tests/11-logs-testing/$TEST_SCRIPT"
+    echo "  - /opt/logs-testing/tests/$TEST_SCRIPT"
     echo "[TEST-RUNNER] Available test scripts:"
-    ls -la /workspaces/orca-test-jcp-ai-workloads/tests/11-logs-testing/test_logs_*.py 2>/dev/null || echo "  (tests not found)"
+    ls -la /opt/logs-testing/tests/test_logs_*.py 2>/dev/null || echo "  (tests not found)"
     exit 1
 fi
 
